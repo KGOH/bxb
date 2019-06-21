@@ -1,7 +1,7 @@
 (ns bxb.core
   (:require [bxb.misc :refer [dissoc-in]]))
 
-(defn- walk-path-forwards [data path]
+(defn- walk-path-forwards [value path]
   (loop [[first-p & rest-p :as path] path
          cur-prefix []
          traveled-paths []]
@@ -10,7 +10,7 @@
           (every? keyword? path))
       (conj
         traveled-paths
-        [(concat cur-prefix path) data])
+        [(concat cur-prefix path) value])
 
       (map? first-p)
       (recur
