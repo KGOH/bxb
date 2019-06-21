@@ -61,8 +61,8 @@
                (= from      d-spec-v)
                (= tr-type   d-type))] ; maybe excess
    :post [(= (:spec_ver %) to)]}
-  (as-> data $
-    (if (= dir tr-spec)
-        (transform-forwards  tr $)
-        (transform-backwards tr $))
-    (assoc $ :spec_ver to)))
+  (let [trans-func
+        (if (= dir tr-spec)
+            transform-forwards
+            transform-backwards)]
+    (assoc (trans-func tr data) :spec_ver to)))
