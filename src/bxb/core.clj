@@ -26,9 +26,9 @@
         (conj cur-prefix first-p)
         traveled-paths))))
 
-(defn- dissoc-paths [data [p & rest-p]]
-  (if p
-    (recur (dissoc-in data p) rest-p)
+(defn- dissoc-paths [data [first-p & rest-p]]
+  (if first-p
+    (recur (dissoc-in data first-p) rest-p)
     data))
 
 (defn- assoc-paths [data [[p v :as first-p] & rest-p]]
