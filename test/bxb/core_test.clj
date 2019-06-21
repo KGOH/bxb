@@ -2,6 +2,31 @@
   (:require [clojure.test :refer :all]
             [bxb.core :refer :all]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+(deftest test-r3-r4
+  (def prescr-r3
+    {:resourceType "VisionPrescription"
+     :spec_ver :r3
+     :reason "ups"
+     :dispense {:prism 5
+                :base 1}})
+
+  (def prescr-r4
+    {:resourceType "VisionPrescription"
+     :spec_ver :r4
+     :extension {:url "http://hl7.org/"
+                 :value {:code "ups"}}
+     :lensSpecification {:amount 5
+                         :base 1}})
+
+  (def tr
+    {:resourceType "VisionPrescription"
+     :spec         [:r3 :r4]
+     :template     [[:reason]          [:extension {:url "http://hl7.org/"} :value :code]
+                    [:dispense :prism] [:lensSpecification :amount]
+                    [:dispense :base]  [:lensSpecification :base]]})
+
+  (testing "transformation forwards r3->r4"
+    (is (= (transform [:r3 :r4] tr prescr-r3)
+           prescr-r4))))
+
+(run-tests)

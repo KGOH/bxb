@@ -1,28 +1,5 @@
 (ns bxb.core
-  (:require [bxb.misc :refer [dissoc-in]]
-            [clojure.pprint :refer [pprint]]))
-
-(def prescr-r3
-  {:resourceType "VisionPrescription"
-   :spec_ver :r3
-   :reason "ups"
-   :dispense {:prism 5
-              :base 1}})
-
-(def prescr-r4
-  {:resourceType "VisionPrescription"
-   :spec_ver :r4
-   :extension {:url "http://hl7.org/"
-               :value {:code "ups"}}
-   :lensSpecification {:amount 5
-                       :base 1}})
-
-(def tr
-  {:resourceType "VisionPrescription"
-   :spec         [:r3 :r4]
-   :template     [[:reason]          [:extension {:url "http://hl7.org/"} :value :code]
-                  [:dispense :prism] [:lensSpecification :amount]
-                  [:dispense :base]  [:lensSpecification :base]]})
+  (:require [bxb.misc :refer [dissoc-in]]))
 
 (defn- walk-path-forwards [data path]
   (loop [[first-p & rest-p :as path] path
@@ -89,25 +66,3 @@
         (transform-forwards  tr $)
         (transform-backwards tr $))
     (assoc $ :spec_ver to)))
-
-(= (transform [:r3 :r4] tr prescr-r3)
-   prescr-r4)
-
-(defn to-sql [tr dir])
-
-(comment
-  "
-  update visionpre
-  set resource = (resource - '{reason, dispense})'
-                  [:dispense :base]  [:lensSpecification :base]]})
-                  [:dispense :base]  [:lensSpecification :base]]})
-  || jsonb_build_object('extensions', resource->'extension' + jobj('value'...))
-  "
-  [[:a] [:b]]
-  [[:a :b] [:c]]
-  [[:a] [:b :c]])
-;;https://www.postgresql.org/docs/11/functions-json.html
-;; ||
-;; -
-;; jsonb_build_object
-
