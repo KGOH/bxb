@@ -14,6 +14,7 @@
     {:resourceType "VisionPrescription"
      :spec_ver :r4
      :extension {:url "http://hl7.org/"
+                 :foo "bar"
                  :value {:code "ups"}}
      :lensSpecification {:amount 5
                          :base 1}})
@@ -21,7 +22,7 @@
   (def tr
     {:resourceType "VisionPrescription"
      :spec         [:r3 :r4]
-     :template     [[:reason]          [:extension {:url "http://hl7.org/"} :value :code]
+     :template     [[:reason]          [:extension {:url "http://hl7.org/", :foo "bar"} :value :code]
                     [:dispense :prism] [:lensSpecification :amount]
                     [:dispense :base]  [:lensSpecification :base]]})
 
