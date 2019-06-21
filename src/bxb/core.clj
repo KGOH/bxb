@@ -26,6 +26,9 @@
         (conj cur-prefix first-p)
         traveled-paths))))
 
+(defn- walk-path-backwards [value path]
+  :not-implemented)
+
 (defn- dissoc-paths [data [first-p & rest-p]]
   (if first-p
     (recur (dissoc-in data first-p) rest-p)
