@@ -21,31 +21,19 @@
         rest-p
         (conj cur-prefix first-p)))))
 
-(defn- dissoc-paths [data [first-p & rest-p]]
-  (if first-p
-    (recur (dissoc-in data first-p)
-           rest-p)
+(defn- transform-forwards [[src path & rest-t :as template] data]
+  (if src
+    (recur rest-t (walk-path-forwards (dissoc-in data src) (get-in data src) path))
     data))
-
-(defn- assoc-paths [data [[src path :as first-t] & rest-t :as template]]
-  (if first-t
-    (recur (walk-path-forwards data (get-in data src) path)
-           rest-t)
-    data))
-
-(defn- transform-forwards [{:keys [template]} data]
-  (-> data
-      (assoc-paths (partition 2 template))
-      (dissoc-paths (take-nth 2 template))))
 
 (defn- transform-backwards [tr data]
   :not-implemented)
 
 (defn transform
   "Transformes data bidirectionally"
-  [[from to                                                       :as dir]
-   {tr-type :resourceType, [tr-from tr-to :as tr-spec] :spec,     :as tr}
-   {d-type  :resourceType, d-spec-v                    :spec_ver, :as data}]
+  [[from to :as dir]
+   {tr-type :resourceType, [tr-from tr-to :as tr-spec] :spec, template :template, :as tr}
+   {d-type :resourceType, d-spec-v :spec_ver, :as data}]
   {:pre  [(and (= (set dir) (set tr-spec))
                (= from      d-spec-v)
                (= tr-type   d-type))] ; maybe excess
@@ -54,4 +42,4 @@
         (if (= dir tr-spec)
             transform-forwards
             transform-backwards)]
-    (assoc (trans-func tr data) :spec_ver to)))
+    (assoc (trans-func template data) :spec_ver to)))
