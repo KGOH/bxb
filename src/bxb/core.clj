@@ -1,56 +1,42 @@
 (ns bxb.core
   (:require [bxb.misc :refer [dissoc-in]]))
 
-(defn- walk-path-forwards [value path]
-  (loop [[first-p & rest-p :as path] path
-         cur-prefix []
-         traveled-paths []]
+(defn- walk-path-forwards [data value path]
+  (loop [data data
+         [first-p & rest-p :as path] path
+         cur-prefix []]
     (cond
-      (or (not first-p)
-          (every? keyword? path))
-      (conj
-        traveled-paths
-        [(concat cur-prefix path) value])
+      (or (not first-p) (every? keyword? path))
+      (assoc-in data (concat cur-prefix path) value)
 
       (map? first-p)
       (recur
+        (assoc-in data cur-prefix first-p)
         rest-p
-        cur-prefix
-        (concat traveled-paths
-                (map (fn [[k v]] [(conj cur-prefix k) v])
-                     first-p)))
+        cur-prefix)
 
       (keyword? first-p)
       (recur
+        data
         rest-p
-        (conj cur-prefix first-p)
-        traveled-paths))))
-
-(defn- walk-path-backwards [value path]
-  :not-implemented)
+        (conj cur-prefix first-p)))))
 
 (defn- dissoc-paths [data [first-p & rest-p]]
   (if first-p
-    (recur (dissoc-in data first-p) rest-p)
+    (recur (dissoc-in data first-p)
+           rest-p)
     data))
 
-(defn- assoc-paths [data [[p v :as first-p] & rest-p]]
-  (if first-p
-    (recur (assoc-in data p v) rest-p)
+(defn- assoc-paths [data [[src path :as first-t] & rest-t :as template]]
+  (if first-t
+    (recur (walk-path-forwards data (get-in data src) path)
+           rest-t)
     data))
-
-(defn- construct-paths-to-dissoc [template]
-  (take-nth 2 template))
-
-(defn- construct-paths-to-assoc [template data]
-  (->> (map (fn [[src path]] (walk-path-forwards (get-in data src) path))
-            (partition 2 template))
-       (apply concat)))
 
 (defn- transform-forwards [{:keys [template]} data]
   (-> data
-      (dissoc-paths (construct-paths-to-dissoc template))
-      (assoc-paths  (construct-paths-to-assoc  template data))))
+      (assoc-paths (partition 2 template))
+      (dissoc-paths (take-nth 2 template))))
 
 (defn- transform-backwards [tr data]
   :not-implemented)
