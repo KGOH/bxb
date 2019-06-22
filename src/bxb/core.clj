@@ -33,14 +33,12 @@
 (defn transform
   "Transformes data bidirectionally"
   [[from to :as dir]
-   {tr-type :resourceType, [tr-from tr-to :as tr-spec] :spec, template :template, :as tr}
-   {d-type :resourceType, d-spec-v :spec_ver, :as data}]
+   {tr-spec :spec, template :template, :as tr}
+   {d-spec-v :spec_ver, :as data}]
   {:pre  [(and (= (set dir) (set tr-spec))
-               (= from      d-spec-v)
-               (= tr-type   d-type))] ; maybe excess
+               (= from d-spec-v))]
    :post [(= (:spec_ver %) to)]}
-  (let [trans-func
-        (if (= dir tr-spec)
-            transform-forwards
-            transform-backwards)]
-    (assoc (trans-func template data) :spec_ver to)))
+  (let [transform* (if (= dir tr-spec)
+                       transform-forwards
+                       transform-backwards)]
+    (assoc (transform* template data) :spec_ver to)))
