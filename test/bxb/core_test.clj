@@ -28,6 +28,10 @@
 
   (testing "transformation forwards r3->r4"
     (is (= (transform [:r3 :r4] tr prescr-r3)
-           prescr-r4))))
+           prescr-r4)))
+
+  (testing "transformation backwards r3<-r4"
+    (is (= (transform [:r4 :r3] tr prescr-r4)
+           prescr-r3))))
 
 (run-tests)

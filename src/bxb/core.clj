@@ -10,24 +10,23 @@
       (assoc-in data (concat cur-prefix path) value)
 
       (keyword? first-p)
-      (recur
-        data
-        rest-p
-        (conj cur-prefix first-p))
+      (recur data
+             rest-p
+             (conj cur-prefix first-p))
 
       (map? first-p)
-      (recur
-        (assoc-in data cur-prefix first-p)
-        rest-p
-        cur-prefix))))
-
+      (recur (assoc-in data cur-prefix first-p)
+             rest-p
+             cur-prefix))))
 
 (defn- transform-forwards [[src path & rest-t] data]
   (if src
-    (recur rest-t (walk-path-forwards (dissoc-in data src) (get-in data src) path))
+    (recur rest-t (walk-path-forwards (dissoc-in data src)
+                                      (get-in data src)
+                                      path))
     data))
 
-(defn- transform-backwards [tr data]
+(defn- transform-backwards [[src path & rest-t] data]
   :not-implemented)
 
 (defn transform
