@@ -6,22 +6,23 @@
          [first-p & rest-p :as path] path
          cur-prefix []]
     (cond
-      (or (not first-p) (every? keyword? path))
+      (or (empty? path) (every? keyword? path))
       (assoc-in data (concat cur-prefix path) value)
-
-      (map? first-p)
-      (recur
-        (assoc-in data cur-prefix first-p)
-        rest-p
-        cur-prefix)
 
       (keyword? first-p)
       (recur
         data
         rest-p
-        (conj cur-prefix first-p)))))
+        (conj cur-prefix first-p))
 
-(defn- transform-forwards [[src path & rest-t :as template] data]
+      (map? first-p)
+      (recur
+        (assoc-in data cur-prefix first-p)
+        rest-p
+        cur-prefix))))
+
+
+(defn- transform-forwards [[src path & rest-t] data]
   (if src
     (recur rest-t (walk-path-forwards (dissoc-in data src) (get-in data src) path))
     data))
