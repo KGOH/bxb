@@ -5,39 +5,31 @@
   (or (keyword? x)
       (integer? x)))
 
-(defn- walk-path-forwards [data value path]
-  (loop [data data
-         [first-p & rest-p :as path] path
-         cur-prefix []]
-    (cond
-      (every? may-be-a-key? path)
-      (assoc-in data (concat cur-prefix path) value)
+(defn- walk-path-forwards [data src path]
+  (let [value (get-in data src)]
+    (loop [data (dissoc-in data src)
+           [first-p & rest-p :as path] path
+           cur-prefix []]
+      (cond
+        (every? may-be-a-key? path)
+        (assoc-in data (concat cur-prefix path) value)
 
-      (may-be-a-key? first-p)
-      (recur data
-             rest-p
-             (conj cur-prefix first-p))
+        (may-be-a-key? first-p)
+        (recur data
+               rest-p
+               (conj cur-prefix first-p))
 
-      (or (map? first-p)
-          (sequential? first-p))
-      (recur (assoc-in data cur-prefix first-p)
-             rest-p
-             cur-prefix)
+        (or (map? first-p)
+            (sequential? first-p))
+        (recur (assoc-in data cur-prefix first-p)
+               rest-p
+               cur-prefix)
 
-      (empty? path)
-      data)))
+        (empty? path)
+        data))))
 
-(defn- transform-forwards [[src path & rest-t] data]
-  (if-not src
-    data
-    (recur rest-t
-           (walk-path-forwards
-            (dissoc-in data src)
-            (get-in data src)
-            path))))
-
-(defn- walk-path-backwards [data path]
-  (loop [data data
+(defn- walk-path-backwards [data src path]
+  (loop [data (assoc-in data src (get-in data (filter may-be-a-key? path)))
          [first-p & rest-p :as path] path
          cur-prefix []]
     (cond
@@ -65,13 +57,16 @@
       (empty? path)
       data)))
 
-(defn- transform-backwards [[path src & rest-t] data]
-  (if-not src
-    data
-    (recur rest-t
-           (walk-path-backwards
-             (assoc-in data path (get-in data (filter may-be-a-key? src)))
-             src))))
+
+(defn- transform-forwards [data [src path & rest-t]] ;TODO: replace with reduce
+  (if src
+      (recur (walk-path-forwards data src path) rest-t)
+      data))
+
+(defn- transform-backwards [data [src path & rest-t]] ;TODO: combine with transform-forwards
+  (if src
+      (recur (walk-path-backwards data src path) rest-t)
+      data))
 
 (defn transform
   "Transformes data bidirectionally"
@@ -84,4 +79,4 @@
   (let [transform* (if (= dir tr-spec)
                        transform-forwards
                        transform-backwards)]
-    (assoc (transform* template data) :spec_ver to)))
+    (assoc (transform* data template) :spec_ver to)))
