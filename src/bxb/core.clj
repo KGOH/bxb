@@ -57,17 +57,6 @@
       (empty? path)
       data)))
 
-
-(defn- transform-forwards [data [src path & rest-t]] ;TODO: replace with reduce
-  (if src
-      (recur (walk-path-forwards data src path) rest-t)
-      data))
-
-(defn- transform-backwards [data [src path & rest-t]] ;TODO: combine with transform-forwards
-  (if src
-      (recur (walk-path-backwards data src path) rest-t)
-      data))
-
 (defn transform
   "Transformes data bidirectionally"
   [[from to :as dir]
@@ -76,7 +65,10 @@
   {:pre  [(and (= (set dir) (set tr-spec))
                (= from d-spec-v))]
    :post [(= (:spec_ver %) to)]}
-  (let [transform* (if (= dir tr-spec)
-                       transform-forwards
-                       transform-backwards)]
-    (assoc (transform* data template) :spec_ver to)))
+  (let [walk (if (= dir tr-spec)
+                 walk-path-forwards
+                 walk-path-backwards)]
+    (-> (reduce (partial apply walk)
+                data
+                (partition 2 template))
+        (assoc :spec_ver to))))
