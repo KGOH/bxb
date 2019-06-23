@@ -6,7 +6,8 @@
          [first-p & rest-p :as path] path
          cur-prefix []]
     (cond
-      (or (empty? path) (every? keyword? path))
+      (or (empty? path)
+          (every? keyword? path))
       (assoc-in data (concat cur-prefix path) value)
 
       (or (keyword? first-p)
