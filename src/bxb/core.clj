@@ -20,11 +20,11 @@
              cur-prefix))))
 
 (defn- transform-forwards [[src path & rest-t] data]
-  (if src
+  (if-not src
+    data
     (recur rest-t (walk-path-forwards (dissoc-in data src)
                                       (get-in data src)
-                                      path))
-    data))
+                                      path))))
 
 (defn- transform-backwards [[src path & rest-t] data]
   :not-implemented)
