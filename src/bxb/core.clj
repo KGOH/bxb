@@ -9,15 +9,18 @@
       (or (empty? path) (every? keyword? path))
       (assoc-in data (concat cur-prefix path) value)
 
-      (keyword? first-p)
+      (or (keyword? first-p)
+          (integer? first-p))
       (recur data
              rest-p
              (conj cur-prefix first-p))
 
-      (map? first-p)
+      (or (map? first-p)
+          (sequential? first-p))
       (recur (assoc-in data cur-prefix first-p)
              rest-p
              cur-prefix))))
+
 
 (defn- transform-forwards [[src path & rest-t] data]
   (if-not src
