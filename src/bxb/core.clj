@@ -6,8 +6,9 @@
          [first-p & rest-p :as path] path
          cur-prefix []]
     (cond
-      (or (empty? path)
-          (every? keyword? path))
+      (every? #(or (keyword? %)  ;maybe move out of the loop?
+                   (integer? %))
+              path)
       (assoc-in data (concat cur-prefix path) value)
 
       (or (keyword? first-p)
@@ -20,8 +21,10 @@
           (sequential? first-p))
       (recur (assoc-in data cur-prefix first-p)
              rest-p
-             cur-prefix))))
+             cur-prefix)
 
+      (empty? path)
+      data)))
 
 (defn- transform-forwards [[src path & rest-t] data]
   (if-not src
