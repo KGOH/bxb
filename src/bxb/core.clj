@@ -1,18 +1,19 @@
 (ns bxb.core
   (:require [bxb.misc :refer [dissoc-in]]))
 
+(defn may-be-a-key? [x]
+  (or (keyword? x)
+      (integer? x)))
+
 (defn- walk-path-forwards [data value path]
   (loop [data data
          [first-p & rest-p :as path] path
          cur-prefix []]
     (cond
-      (every? #(or (keyword? %)  ;maybe move out of the loop?
-                   (integer? %))
-              path)
+      (every? may-be-a-key? path)
       (assoc-in data (concat cur-prefix path) value)
 
-      (or (keyword? first-p)
-          (integer? first-p))
+      (may-be-a-key? first-p)
       (recur data
              rest-p
              (conj cur-prefix first-p))
@@ -29,12 +30,48 @@
 (defn- transform-forwards [[src path & rest-t] data]
   (if-not src
     data
-    (recur rest-t (walk-path-forwards (dissoc-in data src)
-                                      (get-in data src)
-                                      path))))
+    (recur rest-t
+           (walk-path-forwards
+            (dissoc-in data src)
+            (get-in data src)
+            path))))
 
-(defn- transform-backwards [[src path & rest-t] data]
-  :not-implemented)
+(defn- walk-path-backwards [data path]
+  (loop [data data
+         [first-p & rest-p :as path] path
+         cur-prefix []]
+    (cond
+      (every? may-be-a-key? path)
+      (dissoc-in data (concat cur-prefix path))
+
+      (may-be-a-key? first-p)
+      (recur data
+             rest-p
+             (conj cur-prefix first-p))
+
+      (map? first-p)
+      (recur (apply update-in data cur-prefix dissoc (keys first-p))
+             rest-p
+             cur-prefix)
+
+      (sequential? first-p)
+      (do
+        (recur (reduce (fn [m i] (dissoc-in m (conj cur-prefix i)))
+                       data
+                       (keep-indexed #(when-not (nil?  %2) %1) first-p))
+               rest-p
+               cur-prefix))
+
+      (empty? path)
+      data)))
+
+(defn- transform-backwards [[path src & rest-t] data]
+  (if-not src
+    data
+    (recur rest-t
+           (walk-path-backwards
+             (assoc-in data path (get-in data (filter may-be-a-key? src)))
+             src))))
 
 (defn transform
   "Transformes data bidirectionally"

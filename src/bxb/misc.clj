@@ -1,5 +1,16 @@
 (ns bxb.misc)
 
+(defn dissocv [m & ks]
+  (cond
+    (map? m)
+    (apply dissoc m ks)
+
+    :else
+    (let [v (apply assoc m (interleave ks (repeat nil)))]
+      (if (seq (remove nil? v))
+        v
+        []))))
+
 (defn dissoc-in
   "Dissociates an entry from a nested associative structure returning a new
   nested structure. keys is a sequence of keys. Any empty maps that result
@@ -11,6 +22,6 @@
       (let [newmap (dissoc-in nextmap ks)]
         (if (seq newmap)
           (assoc m k newmap)
-          (dissoc m k)))
+          (dissocv m k)))
       m)
-    (dissoc m k)))
+    (dissocv m k)))
