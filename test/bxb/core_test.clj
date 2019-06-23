@@ -2,10 +2,10 @@
   (:require [clojure.test :refer :all]
             [bxb.core :refer :all]))
 
-(deftest test-r3-r4
-  (def prescr-r3
+(deftest test-stu3-r4
+  (def prescr-stu3
     {:resourceType "VisionPrescription"
-     :spec_ver :r3
+     :spec_ver :stu3
      :reason "ups"
      :dispense {:prism 5
                 :base 1}})
@@ -21,17 +21,17 @@
 
   (def tr
     {:resourceType "VisionPrescription"
-     :spec         [:r3 :r4]
+     :spec         [:stu3 :r4]
      :template     [[:reason]          [:extension {:url "http://hl7.org/", :foo "bar"} :value :code]
                     [:dispense :prism] [:lensSpecification :amount]
                     [:dispense :base]  [:lensSpecification :base]]})
 
-  (testing "transformation forwards r3->r4"
-    (is (= (transform [:r3 :r4] tr prescr-r3)
+  (testing "transformation forwards stu3->r4"
+    (is (= (transform [:stu3 :r4] tr prescr-stu3)
            prescr-r4)))
 
-  (testing "transformation backwards r3<-r4"
-    (is (= (transform [:r4 :r3] tr prescr-r4)
-           prescr-r3))))
+  (testing "transformation backwards stu3<-r4"
+    (is (= (transform [:r4 :stu3] tr prescr-r4)
+           prescr-stu3))))
 
 (run-tests)
