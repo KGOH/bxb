@@ -50,12 +50,11 @@
 
       (sequential? first-p)
       (do
-        (recur (reduce dissoc-in
-                       data
-                       (keep-indexed (fn [i p]
-                                       (when-not (nil?  p)
-                                         (conj cur-prefix i)))
-                                     first-p))
+        (recur (transduce
+                 (keep-indexed (fn [i p] (when-not (nil? p) (conj cur-prefix i))))
+                 (completing dissoc-in)
+                 data
+                 first-p)
                rest-p
                cur-prefix))
 
