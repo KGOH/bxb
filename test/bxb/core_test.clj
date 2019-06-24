@@ -12,9 +12,8 @@
 
   (def VisionPrescription-r4
     {:resourceType "VisionPrescription"
-     :extension [{:url "http://hl7.org/reason"
-                  :foo "bar"
-                  :value {:code "ups"}}]
+     :extension {:url "http://hl7.org/reason"
+                 :value {:code "ups"}}
                 ; {:url "http://hl7.org/key"
                 ;  :value {:code "value"}}]
      :lensSpecification {:amount 5
@@ -22,9 +21,9 @@
 
   (def VisionPrescription-template
     [{:stu3 [:reason]
-      :r4   [:extension [] 0 {:url "http://hl7.org/reason", :foo "bar"} :value :code]}
-     ;{:stu3 [:key]
-     ; :r4   [:extension [] 1 {:url "http://hl7.org/value"} :value :code]}
+      :r4   [:extension {:url "http://hl7.org/reason"} :value :code]}
+    ; {:stu3 [:key]}
+    ;  :r4   [:extension [{:url "http://hl7.org/key"}] :value :code]}
      {:stu3 [:dispense :prism]
       :r4   [:lensSpecification :amount]}
      {:stu3 [:dispense :base]
