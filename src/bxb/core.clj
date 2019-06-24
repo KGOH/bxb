@@ -5,6 +5,8 @@
   (or (keyword? x)
       (integer? x)))
 
+
+
 (defn- walk-path-forwards [data src path]
   (let [value (get-in data src)]
     (loop [data (dissoc-in data src)
@@ -63,8 +65,7 @@
    {tr-spec :spec, template :template, :as tr}
    {d-spec-v :spec_ver, :as data}]
   {:pre  [(and (= (set dir) (set tr-spec))
-               (= from d-spec-v))]
-   :post [(= (:spec_ver %) to)]}
+               (= from d-spec-v))]}
   (let [walk (if (= dir tr-spec)
                  walk-path-forwards
                  walk-path-backwards)]
