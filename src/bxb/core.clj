@@ -1,5 +1,7 @@
 (ns bxb.core
-  (:require [bxb.misc :refer [dissoc-in p]]))
+  (:require [bxb.misc :refer [dissoc-in p]]
+            [clojure.string :as str]
+            [cheshire.core :as json]))
 
 (defn- may-be-a-key? [x]
   (or (keyword? x)
@@ -60,42 +62,45 @@
 (defn- hmap-get-fn [path]
   #(get-in % (vec path)))
 
+(defn- hmap-assoc-fn [path get-value]
+  #(assoc-in % (vec path) (get-value %)))
+
 (defn- hmap-dissoc-fn
  ([path]
   #(dissoc-in % (vec path)))
  ([path & paths]
   #(apply dissoc-in % (vec path) (vec paths))))
 
-(defn- hmap-assoc-fn [path get-value]
-  #(assoc-in % (vec path) (get-value %)))
+(defn- kws->jsidx [s]
+  (str "'{" (str/join \, (map json/generate-string s)) "}'"))
 
-(defn- mutate [mutations data]
-  (reduce #(%2 %1) data mutations))
+(defn- sql-get-fn [path]
+  (fn [_] (str "resource#>>" (kws->jsidx path))))
 
-(defn- sql-get-fn [path])
-(defn- sql-dissoc-fn [path & paths])
-(defn- sql-assoc-fn [path value])
+(defn- sql-assoc-fn [path get-value]
+  (fn [_] (str "|| jsonb_set(resource, " (kws->jsidx path) ", " (get-value _) ")")))
 
-(defn transform*
-  "Transformes data bidirectionally"
-  [get-fn
-   assoc-fn
-   dissoc-fn
-   [from to :as dir]
-   {tr-spec :spec, template :template, :as tr}
-   {d-spec-v :spec_ver, :as data}]
-  {:pre  [(and (= (set dir) (set tr-spec))
-               (= from d-spec-v))]}
-  (let [walk (if (= dir tr-spec)
+(defn- sql-dissoc-fn
+ ([path]
+  (fn [_] (str "#- " (kws->jsidx path))))
+ ([path & paths]
+  (fn [_] (str "DELETE " (conj paths path)))))
+
+(defn create-mutations*
+  "Creates mutations to transform data. Bidirectional"
+  [get-fn assoc-fn dissoc-fn [from to :as dir] {:keys [spec template] :as tr}]
+  {:pre  [(and (= (set dir) (set spec)))]}
+  (let [walk (if (= dir spec)
                  walk-path-forwards
                  walk-path-backwards)]
     (-> (mapcat (partial apply walk get-fn assoc-fn dissoc-fn)
-                (partition 2 template))
-        (conj (assoc-fn [:spec_ver] (constantly to)))
-        (mutate data))))
+                (partition 2 template)))))
 
-(defn transform-hmap [dir tr data]
-  (transform* hmap-get-fn hmap-assoc-fn hmap-dissoc-fn dir tr data))
+(defn mutate [mutations data]
+  (reduce #(%2 %1) data mutations))
 
-(defn transform-sql [dir tr data]
-  (transform* sql-get-fn sql-assoc-fn sql-dissoc-fn dir tr data))
+(defn hmap-mutations [dir tr]
+  (create-mutations* hmap-get-fn hmap-assoc-fn hmap-dissoc-fn dir tr))
+
+(defn sql-mutations [dir tr]
+  (create-mutations* sql-get-fn sql-assoc-fn sql-dissoc-fn dir tr))
