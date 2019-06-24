@@ -11,7 +11,7 @@
 
   (def prescr-r4
     {:resourceType "VisionPrescription"
-     :extension [{:url "http://hl7.org/"
+     :extension [{:url "http://hl7.org/reason"
                   :foo "bar"
                   :value {:code "ups"}}]
      :lensSpecification [:spam
@@ -22,7 +22,7 @@
   (def tr
     {:resourceType "VisionPrescription"
      :spec         [:stu3 :r4]
-     :template     [[:reason]          [:extension [] 0 {:url "http://hl7.org/", :foo "bar"} :value :code]
+     :template     [[:reason]          [:extension [] 0 {:url "http://hl7.org/reason", :foo "bar"} :value :code]
                     [:dispense :prism] [:lensSpecification [:spam nil :eggs] 1 :amount]
                     [:dispense :base]  [:lensSpecification 1 :base]]})
 
