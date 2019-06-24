@@ -28,13 +28,13 @@
                     [:dispense :prism] [:lensSpecification [:spam nil :eggs] 1 :amount]
                     [:dispense :base]  [:lensSpecification 1 :base]]})
 
-  (testing "transformation forwards stu3->r4"
+  (testing "hashmap transformation forwards stu3->r4"
     (is (= prescr-r4
-           (transform [:stu3 :r4] tr prescr-stu3))))
+           (transform-hmap [:stu3 :r4] tr prescr-stu3))))
 
-  (testing "transformation backwards stu3<-r4"
+  (testing "hashmap transformation backwards stu3<-r4"
     (is (= prescr-stu3
-           (transform [:r4 :stu3] tr prescr-r4)))))
+           (transform-hmap [:r4 :stu3] tr prescr-r4)))))
 
 (comment
   (run-tests)
