@@ -1,7 +1,7 @@
 (ns bxb.misc)
 
 (defmacro p [data]
-  `(do (println (str ~(resolve data) \:))
+  `(do ;(println (str ~(resolve data) \:))
        (clojure.pprint/pprint ~data)
        ~data))
 
