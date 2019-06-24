@@ -84,7 +84,7 @@
  ([path]
   (fn [_] (str "#- " (kws->jsidx path))))
  ([path & paths]
-  (fn [_] (str "DELETE " (conj paths path)))))
+  (fn [_] (str/join \space (map #(str "#- " (kws->jsidx %)) (conj paths path))))))
 
 (defn create-mutations*
   "Creates mutations to transform data. Bidirectional"
