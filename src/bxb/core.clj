@@ -60,16 +60,16 @@
       mutations)))
 
 (defn- hmap-get-fn [path]
-  #(get-in % (vec path)))
+  #(get-in % path))
 
 (defn- hmap-assoc-fn [path get-value]
-  #(assoc-in % (vec path) (get-value %)))
+  #(assoc-in % path (get-value %)))
 
 (defn- hmap-dissoc-fn
  ([path]
-  #(dissoc-in % (vec path)))
+  #(dissoc-in % path))
  ([path & paths]
-  #(apply dissoc-in % (vec path) (vec paths))))
+  #(apply dissoc-in % path paths)))
 
 (defn- kws->jsidx [s]
   (str "'{" (str/join \, (map json/generate-string s)) "}'"))
