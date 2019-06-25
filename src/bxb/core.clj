@@ -1,11 +1,6 @@
 (ns bxb.core
-  (:require [bxb.misc :refer [dissoc-in p]]
+  (:require [bxb.misc :refer [dissoc-in p may-be-a-key? single-elem?]]
             [bxb.mutate-fns :refer :all]))
-
-(defn- may-be-a-key? [x]
-  (or (keyword? x)
-      (integer? x)
-      (string?  x)))
 
 (defn- walk-put-in [assoc-fn dest get-value]
   (println "walk-put-in\t" dest)
@@ -34,8 +29,14 @@
                rest-d
                cur-prefix))
 
-      :else
-      (println "I dunno what this is"))))
+      (and (sequential? first-d)
+           (single-elem? first-d)
+           (map? (first first-d)))
+      (do
+        (println "I need to find a hmap in a seq" first-d) ; TODO: add upsert
+        (recur (conj mutations (assoc-fn cur-prefix (constantly first-d)))
+               rest-d
+               (conj cur-prefix 0))))))
 
 
 (defn- walk-pop-in [get-fn dissoc-fn src]
@@ -63,12 +64,18 @@
       (map? first-s)
       (do
         (println "it is a map")
-        (recur (conj mutations (apply dissoc-fn (map conj (repeat cur-prefix) (keys first-s))))
+        (recur (into mutations (map (fn [k] (dissoc-fn (conj cur-prefix k))) (keys first-s)))
                rest-s
                cur-prefix))
 
-      :else
-      (println "I dunno what this is"))))
+      (and (sequential? first-s)
+           (single-elem? first-s)
+           (map? (first first-s)))
+      (do
+        (println "I need to find a hmap in a seq" first-s) ; TODO add search
+        (recur (into mutations (map (fn [k] (dissoc-fn (conj cur-prefix 0 k))) (keys first-s)))
+               rest-s
+               cur-prefix)))))
 
 (defn- walk-path [get-fn assoc-fn dissoc-fn src dest]
   (println "walk-path")
@@ -95,7 +102,10 @@
 
 (defn mutate [mutations data]
   (println "mutate")
-  (reduce #(%2 %1) data mutations))
+  (reduce (fn [d m] (println "applying" m "to" d)
+                    (m d))
+          data
+          mutations))
 
 (defn hmap-mutations [dir template]
   (create-mutations* hmap-get-fn hmap-assoc-fn hmap-dissoc-fn dir template))

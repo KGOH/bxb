@@ -1,5 +1,14 @@
 (ns bxb.misc)
 
+(defn single-elem? [s]
+  (and (seq s)
+       (empty? (rest s))))
+
+(defn may-be-a-key? [x]
+  (or (keyword? x)
+      (integer? x)
+      (string?  x)))
+
 (defmacro p [data]
   `(do ;(println (str ~(resolve data) \:))
        (clojure.pprint/pprint ~data)
@@ -21,13 +30,6 @@
   nested structure. keys is a sequence of keys. Any empty maps that result
   will not be present in the new structure.
   Credit: https://stackoverflow.com/a/14488425/6179231"
-  ([m ks1 & [ks2 & rest-ks :as ks]]
-   (if ks1
-     (recur (dissoc-in m ks1)
-            ks2
-            rest-ks)
-     m))
-
   ([m [k & ks :as keys]]
    (if ks
      (if-let [nextmap (get m k)]
