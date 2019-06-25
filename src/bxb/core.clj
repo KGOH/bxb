@@ -1,33 +1,7 @@
 (ns bxb.core
   (:require [bxb.misc :refer [dissoc-in p may-be-a-key? single-elem?]]
-            [bxb.mutate-fns :refer :all]))
-
-(defn- walk-put-in [assoc-fn dest get-value]
-  (loop [mutations []
-         [first-d & rest-d :as dest] dest
-         cur-prefix []]
-    (cond
-      (every? may-be-a-key? dest)
-      (conj mutations
-            (assoc-fn (concat cur-prefix dest) get-value))
-
-      (may-be-a-key? first-d)
-      (recur mutations
-             rest-d
-             (conj cur-prefix first-d))
-
-      (map? first-d)
-      (recur (conj mutations (assoc-fn cur-prefix (constantly first-d)))
-             rest-d
-             cur-prefix)
-
-      (and (sequential? first-d) ; TODO: add upsert
-           (single-elem? first-d)
-           (map? (first first-d)))
-      (recur (conj mutations (assoc-fn cur-prefix (constantly first-d)))
-             rest-d
-             (conj cur-prefix 0)))))
-
+            [bxb.mutate-fns :refer :all]
+            [utiliva.core :refer [keepcat]]))
 
 (defn- walk-pop-in [get-fn dissoc-fn src]
   (loop [mutations []
@@ -58,6 +32,32 @@
              rest-s
              cur-prefix))))
 
+(defn- walk-put-in [assoc-fn dest get-value]
+  (loop [mutations []
+         [first-d & rest-d :as dest] dest
+         cur-prefix []]
+    (cond
+      (every? may-be-a-key? dest)
+      (conj mutations
+            (assoc-fn (concat cur-prefix dest) get-value))
+
+      (may-be-a-key? first-d)
+      (recur mutations
+             rest-d
+             (conj cur-prefix first-d))
+
+      (map? first-d)
+      (recur (conj mutations (assoc-fn cur-prefix (constantly first-d)))
+             rest-d
+             cur-prefix)
+
+      (and (sequential? first-d) ; TODO: add upsert
+           (single-elem? first-d)
+           (map? (first first-d)))
+      (recur (conj mutations (assoc-fn cur-prefix (constantly first-d)))
+             rest-d
+             (conj cur-prefix 0)))))
+
 (defn- walk-path [get-fn assoc-fn dissoc-fn src dest]
   (let [{:keys [get-value dissoc-mutations]} (walk-pop-in get-fn dissoc-fn src)
         assoc-mutations (walk-put-in assoc-fn dest get-value)]
@@ -66,8 +66,9 @@
 (defn create-mutations*
   "Creates mutations to transform data. Bidirectional"
   [get-fn assoc-fn dissoc-fn [from to] template]
-  (-> (mapcat (fn [{src from, dest to}] (walk-path get-fn assoc-fn dissoc-fn src dest))
-              template)))
+  (keepcat (fn [{src from, dest to}]
+             (when (and src dest) (walk-path get-fn assoc-fn dissoc-fn src dest)))
+           template))
 
 (defn mutate [mutations data]
   (reduce #(%2 %1)
