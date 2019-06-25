@@ -63,7 +63,7 @@
         assoc-mutations (walk-put-in assoc-fn dest get-value)]
     (into assoc-mutations dissoc-mutations)))
 
-(defn create-mutations*
+(defn create-mutations
   "Creates mutations to transform data. Bidirectional"
   [get-fn assoc-fn dissoc-fn [from to] template]
   (keepcat (fn [{src from, dest to}]
@@ -76,7 +76,7 @@
           mutations))
 
 (defn hmap-mutations [dir template]
-  (create-mutations* hmap-get-fn hmap-assoc-fn hmap-dissoc-fn dir template))
+  (create-mutations hmap-get-fn hmap-assoc-fn hmap-dissoc-fn dir template))
 
 (defn sql-mutations [dir template]
-  (create-mutations* sql-get-fn sql-assoc-fn sql-dissoc-fn dir template))
+  (create-mutations sql-get-fn sql-assoc-fn sql-dissoc-fn dir template))
