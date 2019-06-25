@@ -3,17 +3,14 @@
             [bxb.mutate-fns :refer :all]
             [utiliva.core :refer [keepcat]]))
 
-(defn- walk-pop-in [search-fn get-fn dissoc-fn src]
+(defn- walk-pop-in [search-fn dissoc-fn src]
   (loop [mutations []
          [first-s & rest-s :as src] src
          cur-prefix []]
     (cond
       (every? may-be-a-key? src)
-      (let [p (concat cur-prefix (map constantly src))
-            get-value (get-fn p)
-            pop-value (dissoc-fn p)]
-        {:get-value get-value
-         :dissoc-mutations (conj mutations pop-value)})
+      {:get-value-path (concat cur-prefix (map constantly src))
+       :dissoc-mutations mutations}
 
       (may-be-a-key? first-s)
       (recur mutations
@@ -32,14 +29,14 @@
              (into first-s rest-s)
              (conj cur-prefix (search-fn cur-prefix (first first-s)))))))
 
-(defn- walk-put-in [search-fn assoc-fn dest get-value]
+(defn- walk-put-in [search-fn assoc-fn dest]
   (loop [mutations []
          [first-d & rest-d :as dest] dest
          cur-prefix []]
     (cond
       (every? may-be-a-key? dest)
-      (conj mutations
-            (assoc-fn (concat cur-prefix (map constantly dest)) get-value))
+      {:put-value-path  (concat cur-prefix (map constantly dest))
+       :assoc-mutations mutations}
 
       (may-be-a-key? first-d)
       (recur mutations
@@ -59,9 +56,12 @@
              (conj cur-prefix (search-fn cur-prefix (first first-d)))))))
 
 (defn- walk-path [search-fn get-fn assoc-fn dissoc-fn src dest]
-  (let [{:keys [get-value dissoc-mutations]} (walk-pop-in search-fn get-fn dissoc-fn src)
-        assoc-mutations (walk-put-in search-fn assoc-fn dest get-value)]
-    (into assoc-mutations dissoc-mutations)))
+  (let [{:keys [get-value-path dissoc-mutations]} (walk-pop-in search-fn dissoc-fn src)
+        {:keys [put-value-path  assoc-mutations]} (walk-put-in search-fn assoc-fn  dest)]
+    (-> assoc-mutations
+        (conj (assoc-fn put-value-path (get-fn get-value-path)))
+        (conj (dissoc-fn get-value-path))
+        (into dissoc-mutations))))
 
 (defn create-mutations
   "Creates mutations to transform data. Bidirectional"

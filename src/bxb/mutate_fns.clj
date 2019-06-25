@@ -39,8 +39,11 @@
 (defn hmap-assoc-fn [path get-value]
   (fn [data-source] (assoc-in-vec data-source (resolve-path path data-source) (get-value data-source))))
 
-(defn hmap-dissoc-fn [path]
-  (fn [data-source] (dissoc-in data-source (resolve-path path data-source))))
+(defn hmap-dissoc-fn
+  ([path]
+   (fn [data-source] (dissoc-in data-source (resolve-path path data-source))))
+  ([path value] ; TODO: match dissocing value with provided value
+   (hmap-dissoc-fn path)))
 
 (defn kvs->jsidx [s]
   (str "'{" (str/join \, (map json/generate-string s)) "}'"))
@@ -54,5 +57,8 @@
 (defn sql-assoc-fn [path get-value]
   (fn [data-source] (str "|| jsonb_set(" data-source ", " (kvs->jsidx (resolve-path path data-source)) ", " (get-value data-source) ")")))
 
-(defn sql-dissoc-fn [path]
-  (fn [data-source] (str "#- " (kvs->jsidx (resolve-path path data-source)))))
+(defn sql-dissoc-fn
+  ([path]
+   (fn [data-source] (str "#- " (kvs->jsidx (resolve-path path data-source)))))
+  ([path value]
+   (sql-dissoc-fn path))) ; TODO: match dissocing value with provided
