@@ -1,5 +1,28 @@
 (ns bxb.misc)
 
+(defn assoc-in-vec [m [k & ks] v]
+    (cond
+      (and (nil? m)
+           (integer? k)
+           (zero? k))
+      (if ks
+        [(assoc-in-vec (get m k) ks v)]
+        [v])
+
+      (or (map? m)
+          (sequential? m)
+          (and (nil? m) (keyword? k)))
+      (if ks
+        (assoc m k (assoc-in-vec (get m k) ks v))
+        (assoc m k v))))
+
+
+(defn vec-remove
+  "remove elem in coll
+   Credit: https://stackoverflow.com/a/18319708/6179231"
+  [coll pos]
+  (vec (concat (subvec coll 0 pos) (subvec coll (inc pos)))))
+
 (defn single-elem? [s]
   (and (seq s)
        (empty? (rest s))))
@@ -19,11 +42,8 @@
     (map? m)
     (apply dissoc m ks)
 
-    :else
-    (let [v (apply assoc m (interleave ks (repeat nil)))]
-      (if (seq (remove nil? v))
-        v
-        []))))
+    (sequential? m)
+    (reduce vec-remove (vec m) ks)))
 
 (defn dissoc-in
   "Dissociates an entry from a nested associative structure returning a new

@@ -8,11 +8,14 @@
 (comment
   (json/generate-string i0)
   (def tr
-    {:resourceType "VisionPrescription"
-     :spec         [:stu3 :r4]
-     :template     [[:reason]          [:extension [] 0 {:url "http://hl7.org/", :foo "bar"} :value :code]
-                    [:dispense :prism] [:lensSpecification [:spam nil :eggs] 1 :amount]
-                    [:dispense :base]  [:lensSpecification 1 :base]]})
+    [{:stu3 [:reason]
+      :r4   [:extension [{:url "http://hl7.org/reason"}] :value :code]}
+     {:stu3 [:dispense :prism]
+      :r4   [:lensSpecification :amount]}
+     {:stu3 [:dispense :base]
+      :r4   [:lensSpecification :base]}])
+  (println (str/join (drop 3 (str/join \newline (map #(% "resource") (sql-mutations [:r4 :stu3] tr))))))
+  (println (str/join (drop 3 (str/join \newline (map #(% "resource") (sql-mutations [:stu3 :r4] tr))))))
 
   (println
     (str "UPDATE VisionPrescription\n"
