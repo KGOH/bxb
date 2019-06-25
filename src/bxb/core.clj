@@ -1,5 +1,5 @@
 (ns bxb.core
-  (:require [bxb.misc :refer [dissoc-in p may-be-a-key? single-elem?]]
+  (:require [bxb.misc :refer [may-be-a-key? single-elem?]]
             [bxb.mutate-fns :refer :all]
             [utiliva.core :refer [keepcat]]))
 
