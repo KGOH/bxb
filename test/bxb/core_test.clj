@@ -6,7 +6,6 @@
   (def VisionPrescription-stu3
     {:resourceType "VisionPrescription"
      :reason "ups"
-     ;:key "value"
      :extension [{:url "http://hl7.org/fact"
                   :value {:code "fucct"}}]
      :dispense {:prism 5
