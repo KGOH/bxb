@@ -3,61 +3,35 @@
             [bxb.mutate-fns :refer :all]
             [utiliva.core :refer [keepcat]]))
 
-(defn- walk-pop-in [search-fn dissoc-fn src]
+(defn- walk [search-fn soc-fn path]
   (loop [mutations []
-         [first-s & rest-s :as src] src
+         [first-p & rest-p :as path] path
          cur-prefix []]
     (cond
-      (every? may-be-a-key? src)
-      {:get-value-path (concat cur-prefix (map constantly src))
-       :dissoc-mutations mutations}
+      (every? may-be-a-key? path)
+      {:path  (concat cur-prefix (map constantly path))
+       :mutations mutations}
 
-      (may-be-a-key? first-s)
+      (may-be-a-key? first-p)
       (recur mutations
-             rest-s
-             (conj cur-prefix (constantly first-s)))
+             rest-p
+             (conj cur-prefix (constantly first-p)))
 
-      (map? first-s)
-      (recur (conj mutations (dissoc-fn cur-prefix))
-             rest-s
+      (map? first-p)
+      (recur (conj mutations (soc-fn cur-prefix (constantly first-p)))
+             rest-p
              cur-prefix)
 
-      (and (sequential? first-s)
-           (single-elem? first-s)
-           (map? (first first-s)))
+      (and (sequential? first-p)
+           (single-elem? first-p)
+           (map? (first first-p)))
       (recur mutations
-             (into first-s rest-s)
-             (conj cur-prefix (search-fn cur-prefix (first first-s)))))))
-
-(defn- walk-put-in [search-fn assoc-fn dest]
-  (loop [mutations []
-         [first-d & rest-d :as dest] dest
-         cur-prefix []]
-    (cond
-      (every? may-be-a-key? dest)
-      {:put-value-path  (concat cur-prefix (map constantly dest))
-       :assoc-mutations mutations}
-
-      (may-be-a-key? first-d)
-      (recur mutations
-             rest-d
-             (conj cur-prefix (constantly first-d)))
-
-      (map? first-d)
-      (recur (conj mutations (assoc-fn cur-prefix (constantly first-d)))
-             rest-d
-             cur-prefix)
-
-      (and (sequential? first-d)
-           (single-elem? first-d)
-           (map? (first first-d)))
-      (recur mutations
-             (into first-d rest-d)
-             (conj cur-prefix (search-fn cur-prefix (first first-d)))))))
+             (into first-p rest-p)
+             (conj cur-prefix (search-fn cur-prefix (first first-p)))))))
 
 (defn- walk-path [search-fn get-fn assoc-fn dissoc-fn src dest]
-  (let [{:keys [get-value-path dissoc-mutations]} (walk-pop-in search-fn dissoc-fn src)
-        {:keys [put-value-path  assoc-mutations]} (walk-put-in search-fn assoc-fn  dest)]
+  (let [{get-value-path :path, dissoc-mutations :mutations} (walk search-fn dissoc-fn src)
+        {put-value-path :path, assoc-mutations  :mutations} (walk search-fn assoc-fn  dest)]
     (-> assoc-mutations
         (conj (assoc-fn put-value-path (get-fn get-value-path)))
         (conj (dissoc-fn get-value-path))
