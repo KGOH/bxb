@@ -3,22 +3,22 @@
             [bxb.mutate-fns :refer :all]
             [utiliva.core :refer [keepcat]]))
 
-(defn- walk-path [search-fn ssoc-fn path]
+(defn- walk-path [const-fn search-fn ssoc-fn path]
   (loop [walked-paths []
          [first-p & rest-p :as path] path
          cur-prefix []]
     (cond
       (every? may-be-a-key? path)
       {:mutations walked-paths
-       :path      (concat cur-prefix (map constantly path))}
+       :path      (concat cur-prefix (map const-fn path))}
 
       (may-be-a-key? first-p)
       (recur walked-paths
              rest-p
-             (conj cur-prefix (constantly first-p)))
+             (conj cur-prefix (const-fn first-p)))
 
       (map? first-p)
-      (recur (conj walked-paths (ssoc-fn cur-prefix (constantly first-p)))
+      (recur (conj walked-paths (ssoc-fn cur-prefix (const-fn first-p)))
              rest-p
              cur-prefix)
 
@@ -29,9 +29,9 @@
              (into first-p rest-p)
              (conj cur-prefix (search-fn cur-prefix (first first-p)))))))
 
-(defn- interpret-template [search-fn get-fn assoc-fn dissoc-fn src dest]
-  (let [{get-value-path :path, dissoc-mutations :mutations} (walk-path search-fn dissoc-fn src)
-        {put-value-path :path, assoc-mutations  :mutations} (walk-path search-fn assoc-fn dest)]
+(defn- interpret-template [const-fn search-fn get-fn assoc-fn dissoc-fn src dest]
+  (let [{get-value-path :path, dissoc-mutations :mutations} (walk-path const-fn search-fn dissoc-fn src)
+        {put-value-path :path, assoc-mutations  :mutations} (walk-path const-fn search-fn assoc-fn dest)]
     (concat
       assoc-mutations
       [(assoc-fn put-value-path (get-fn get-value-path))]
@@ -40,9 +40,9 @@
 
 (defn create-mutations
   "Creates mutations to transform data. Bidirectional"
-  [search-fn get-fn assoc-fn dissoc-fn [from to] template]
+  [const-fn search-fn get-fn assoc-fn dissoc-fn [from to] template]
   (let [interpret-template*
-        (partial interpret-template search-fn get-fn assoc-fn dissoc-fn)]
+        (partial interpret-template const-fn search-fn get-fn assoc-fn dissoc-fn)]
     (keepcat (fn [{src from, dest to}]
                (when (and src dest) (interpret-template* src dest)))
              template)))
@@ -53,7 +53,7 @@
           mutations))
 
 (def hmap-mutations
-  (partial create-mutations hmap-search-fn hmap-get-fn hmap-assoc-fn hmap-dissoc-fn))
+  (partial create-mutations hmap-const-fn hmap-search-fn hmap-get-fn hmap-assoc-fn hmap-dissoc-fn))
 
 (def sql-mutations
-  (partial create-mutations sql-search-fn sql-get-fn sql-assoc-fn sql-dissoc-fn))
+  (partial create-mutations sql-const-fn sql-search-fn sql-get-fn sql-assoc-fn sql-dissoc-fn))

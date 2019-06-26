@@ -28,6 +28,9 @@
   (mapv (fn [pt] (pt data-source))
         path))
 
+(defn hmap-const-fn [constant]
+  (constantly constant))
+
 (defn hmap-get-fn [path]
   (fn [data-source] (get-in data-source (resolve-path path data-source))))
 
@@ -45,11 +48,16 @@
   ([path value] ; TODO: match dissocing value with provided value
    (hmap-dissoc-fn path)))
 
-(defn kvs->jsidx [s]
-  (str "'{" (str/join \, (map json/generate-string s)) "}'"))
+(defn kvs->jsidx [s] ; TODO: maybe place this into resolve-path
+  (str "'{" (str/join \, s) "}'"))
+
+(defn sql-const-fn [constant]
+  (constantly (json/generate-string constant)))
 
 (defn sql-search-fn [path value]
-  (fn [data-source] (str "SELECT " (resolve-path path data-source) " FROM " data-source " WHERE " value)));(constantly 0))
+  (fn [data-source] (str "SELECT " (kvs->jsidx (resolve-path path data-source))
+                         " FROM " data-source
+                         " WHERE " ((sql-const-fn value)))))
 
 (defn sql-get-fn [path]
   (fn [data-source] (str data-source "#>>" (kvs->jsidx (resolve-path path data-source)))))
