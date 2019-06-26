@@ -2,6 +2,9 @@
 
 (defn assoc-in-vec [m [k & ks] v]
     (cond
+      (nil? v)
+      m
+
       (and (nil? m)
            (integer? k)
            (zero? k))

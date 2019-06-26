@@ -95,6 +95,7 @@
                   :r4   [:lensSpecification :amount]}
                  {:stu3 [:dispense :base]
                   :r4   [:lensSpecification :base]}]}
+
      {:desc     "hashmap mutation %s->%s remap with missing source"
       :spec     [:stu3 :r4]
       :stu3     {:resourceType "VisionPrescription"
