@@ -12,8 +12,8 @@
     (recur pattern [s])
     (let [results
           (keep-indexed
-            (fn [i m] (when (match? pattern m) i))
-            s)]
+           (fn [i m] (when (match? pattern m) i))
+           s)]
       (cond
         (empty? results)
         (count s)

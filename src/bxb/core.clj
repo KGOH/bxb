@@ -33,10 +33,10 @@
   (let [{get-value-path :path, dissoc-mutations :mutations} (walk-path const-fn search-fn dissoc-fn src)
         {put-value-path :path, assoc-mutations  :mutations} (walk-path const-fn search-fn assoc-fn dest)]
     (concat
-      assoc-mutations
-      [(assoc-fn put-value-path (get-fn get-value-path))]
-      dissoc-mutations
-      [(dissoc-fn get-value-path (get-fn get-value-path))])))
+     assoc-mutations
+     [(assoc-fn put-value-path (get-fn get-value-path))]
+     dissoc-mutations
+     [(dissoc-fn get-value-path (get-fn get-value-path))])))
 
 (defn create-mutations
   "Creates mutations to transform data. Bidirectional"

@@ -18,10 +18,10 @@
   (println (str/join (drop 3 (str/join \newline (map #(% "resource") (sql-mutations [:stu3 :r4] tr))))))
 
   (println
-    (str "UPDATE VisionPrescription\n"
-         "SET resource = "
-         (str/join (drop 3 (str/join \newline (map #(% "VisionPrescription") (sql-mutations [:r4 :stu3] tr)))))
-         ";"))
+   (str "UPDATE VisionPrescription\n"
+        "SET resource = "
+        (str/join (drop 3 (str/join \newline (map #(% "VisionPrescription") (sql-mutations [:r4 :stu3] tr)))))
+        ";"))
 
   (p (map #(% "VisionPrescription") (sql-mutations [:r4 :stu3] tr))))
 

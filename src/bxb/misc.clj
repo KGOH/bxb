@@ -1,24 +1,23 @@
 (ns bxb.misc)
 
 (defn assoc-in-vec [m [k & ks] v]
-    (cond
-      (nil? v)
-      m
+  (cond
+    (nil? v)
+    m
 
-      (and (nil? m)
-           (integer? k)
-           (zero? k))
-      (if ks
-        [(assoc-in-vec (get m k) ks v)]
-        [v])
+    (and (nil? m)
+         (integer? k)
+         (zero? k))
+    (if ks
+      [(assoc-in-vec (get m k) ks v)]
+      [v])
 
-      (or (map? m)
-          (sequential? m)
-          (and (nil? m) (keyword? k)))
-      (if ks
-        (assoc m k (assoc-in-vec (get m k) ks v))
-        (assoc m k v))))
-
+    (or (map? m)
+        (sequential? m)
+        (and (nil? m) (keyword? k)))
+    (if ks
+      (assoc m k (assoc-in-vec (get m k) ks v))
+      (assoc m k v))))
 
 (defn vec-remove
   "remove elem in coll
@@ -37,8 +36,8 @@
 
 (defmacro p [data]
   `(do ;(println (str ~(resolve data) \:))
-       (clojure.pprint/pprint ~data)
-       ~data))
+     (clojure.pprint/pprint ~data)
+     ~data))
 
 (defn dissocv [m & ks]
   (cond
