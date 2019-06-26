@@ -3,14 +3,14 @@
             [bxb.mutate-fns :refer :all]
             [utiliva.core :refer [keepcat]]))
 
-(defn- walk-path [search-fn path]
+(defn- walk-path [search-fn ssoc-fn path]
   (loop [walked-paths []
          [first-p & rest-p :as path] path
          cur-prefix []]
     (cond
       (every? may-be-a-key? path)
-      (conj walked-paths
-            [(concat cur-prefix (map constantly path))])
+      {:mutations walked-paths
+       :path      (concat cur-prefix (map constantly path))}
 
       (may-be-a-key? first-p)
       (recur walked-paths
@@ -18,7 +18,7 @@
              (conj cur-prefix (constantly first-p)))
 
       (map? first-p)
-      (recur (conj walked-paths [cur-prefix (constantly first-p)])
+      (recur (conj walked-paths (ssoc-fn cur-prefix (constantly first-p)))
              rest-p
              cur-prefix)
 
@@ -30,17 +30,13 @@
              (conj cur-prefix (search-fn cur-prefix (first first-p)))))))
 
 (defn- interpret-template [search-fn get-fn assoc-fn dissoc-fn src dest]
-  (let [dissoc-paths (walk-path search-fn src)
-        assoc-paths  (walk-path search-fn dest)
-        put-value-path (first (peek assoc-paths))
-        get-value-path (first (peek dissoc-paths))]
+  (let [{get-value-path :path, dissoc-mutations :mutations} (walk-path search-fn dissoc-fn src)
+        {put-value-path :path, assoc-mutations  :mutations} (walk-path search-fn assoc-fn dest)]
     (concat
-      (map (partial apply assoc-fn)
-           (conj (pop assoc-paths)
-                 [put-value-path (get-fn get-value-path)]))
-      (map (partial apply dissoc-fn)
-           (conj (pop dissoc-paths)
-                 [get-value-path (get-fn get-value-path)])))))
+      assoc-mutations
+      [(assoc-fn put-value-path (get-fn get-value-path))]
+      dissoc-mutations
+      [(dissoc-fn get-value-path (get-fn get-value-path))])))
 
 (defn create-mutations
   "Creates mutations to transform data. Bidirectional"
