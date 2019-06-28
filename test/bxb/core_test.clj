@@ -120,5 +120,14 @@
 
 (comment
   (run-tests)
+; {:a [{:a1  :b2} {:a1 :b3}]}
+; {:a [{:b2} {:a1}]}
+
+; []  ;required fileds, константы без источника в корне
+; [:extension [:url] :value :code] ;; map
+
+; [:extension [{:url "http://hl7.org/reason"}] :value :code]
+; [:extension [{:a1 :b3}] :value :code] ;;
+
   (comment))
 
