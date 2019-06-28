@@ -10,7 +10,7 @@
     (cond
       (every? may-be-a-key? path)
       {:mutations walked-paths
-       :path      (concat cur-prefix (map const-fn path))}
+       :path      (into cur-prefix (map const-fn path))}
 
       (may-be-a-key? first-p)
       (recur walked-paths
@@ -57,3 +57,11 @@
 
 (def sql-mutations
   (partial create-mutations sql-const-fn sql-search-fn sql-get-fn sql-assoc-fn sql-dissoc-fn))
+
+(def test-mutations
+  (partial create-mutations
+           (fn [& args] (apply list :const-fn args))
+           (fn [& args] (apply list :search-fn args))
+           (fn [& args] (apply list :get-fn args))
+           (fn [& args] (apply list :assoc-fn args))
+           (fn [& args] (apply list :get-fn args))))

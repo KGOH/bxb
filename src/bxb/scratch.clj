@@ -14,6 +14,7 @@
       :r4   [:lensSpecification :amount]}
      {:stu3 [:dispense :base]
       :r4   [:lensSpecification :base]}])
+  (p (test-mutations [:r4 :stu3] tr))
   (println (str/join (drop 3 (str/join \newline (map #(% "resource") (sql-mutations [:r4 :stu3] tr))))))
   (println (str/join (drop 3 (str/join \newline (map #(% "resource") (sql-mutations [:stu3 :r4] tr))))))
 
