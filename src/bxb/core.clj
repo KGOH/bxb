@@ -4,28 +4,28 @@
             [utiliva.core :refer [keepcat]]))
 
 (defn- walk-path [const-fn search-fn ssoc-fn path]
-  (loop [walked-paths []
+  (loop [mutations []
          [first-p & rest-p :as path] path
          cur-prefix []]
     (cond
       (every? may-be-a-key? path)
-      {:mutations walked-paths
+      {:mutations mutations
        :path      (into cur-prefix (map const-fn path))}
 
       (may-be-a-key? first-p)
-      (recur walked-paths
+      (recur mutations
              rest-p
              (conj cur-prefix (const-fn first-p)))
 
       (map? first-p)
-      (recur (conj walked-paths (ssoc-fn cur-prefix (const-fn first-p)))
+      (recur (conj mutations (ssoc-fn cur-prefix (const-fn first-p)))
              rest-p
              cur-prefix)
 
       (and (sequential? first-p)
            (single-elem? first-p)
            (map? (first first-p)))
-      (recur walked-paths
+      (recur mutations
              (into first-p rest-p)
              (conj cur-prefix (search-fn cur-prefix (first first-p)))))))
 
