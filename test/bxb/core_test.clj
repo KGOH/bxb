@@ -98,16 +98,20 @@
 
      {:desc     "hashmap mutation %s->%s remap with missing source"
       :spec     [:stu3 :r4]
+      :stu3     {:resourceType "VisionPrescription"}
+      :r4       {:resourceType "VisionPrescription"}
+      :template [{:stu3 [:dispense :prism]
+                  :r4   [:lensSpecification :amount]}]}
+     {:desc     "hashmap mutation %s->%s mapped name remap"
+      :spec     [:stu3 :r4]
       :stu3     {:resourceType "VisionPrescription"
-                 :reason       "ups"}
+                 :dispense     [{:base  1}
+                                {:base  2}]}
       :r4       {:resourceType      "VisionPrescription"
-                 :code              "ups"}
-      :template [{:stu3 [:reason]
-                  :r4   [:code]}
-                 {:stu3 [:dispense :prism]
-                  :r4   [:lensSpecification :amount]}
-                 {:stu3 [:dispense :base]
-                  :r4   [:lensSpecification :base]}]}])
+                 :lensSpecification [{:bse  1}
+                                     {:bse  2}]}
+      :template [{:stu3 [[:dispense] :base]
+                  :r4   [[:lensSpecification] :bse]}]}])
 
   (mapv (fn [{:keys [desc spec template] :as t}]
           (mapv (fn [[from to]]
@@ -124,7 +128,9 @@
 ; {:a [{:b2} {:a1}]}
 
 ; []  ;required fileds, константы без источника в корне
-; [:extension [:url] :value :code] ;; map
+
+; [:extension [:url] :a] ;; map
+; [:extension [:url] :b] ;; map
 
 ; [:extension [{:url "http://hl7.org/reason"}] :value :code]
 ; [:extension [{:a1 :b3}] :value :code] ;;
