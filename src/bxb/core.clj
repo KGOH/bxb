@@ -37,8 +37,11 @@
   (let [[get-value-path & dissoc-const-paths-vals] (walk-path const-fn search-fn map-fn src)
         [put-value-path &  assoc-const-paths-vals] (walk-path const-fn search-fn map-fn dest)
         get-value (get-fn get-value-path)]
-    (into (map (partial apply assoc-fn)  (conj assoc-const-paths-vals  [put-value-path get-value]))
-          (map (partial apply dissoc-fn) (conj dissoc-const-paths-vals [get-value-path get-value])))))
+    (concat
+      (map (partial apply assoc-fn) assoc-const-paths-vals)
+      [(assoc-fn put-value-path get-value)
+       (dissoc-fn get-value-path get-value)]
+      (map (partial apply dissoc-fn) dissoc-const-paths-vals))))
 
 (defn create-mutations
   "Creates mutations to transmapm data. Bidirectional"
