@@ -17,12 +17,11 @@
              walked-paths-vals)
 
       (map? first-p)
-      (let [const-paths
-            (map (fn [[k v]] [(conj cur-path (const-fn k)) (const-fn v)])
-                 first-p)]
-        (recur rest-p
-               cur-path
-               (concat const-paths walked-paths-vals)))
+      (recur rest-p
+             cur-path
+             (into (map (fn [[k v]] [(conj cur-path (const-fn k)) (const-fn v)])
+                        first-p)
+                   walked-paths-vals))
 
       (and (sequential? first-p)
            (single-elem? first-p))
