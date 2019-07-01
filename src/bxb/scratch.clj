@@ -4,9 +4,18 @@
             [bxb.core :refer :all]
             [bxb.misc :refer :all]
             [cheshire.core :as json]))
+(do
+  (def tr
+    [{:v1 [:a 0 :b]
+      :v2 [:a 0 :c]}
+     {:v1 [:a 1 :b]
+      :v2 [:a 1 :c]}
+     {:v1 [:a 2 :b]
+      :v2 [:a 2 :c]}])
+  (p (test-mutations [:v2 :v1] tr)))
 
 (comment
-  (json/generate-string i0)
+  (println *e)
   (def tr
     [{:stu3 [:reason]
       :r4   [:extension [{:url "http://hl7.org/reason"}] :value :code]}
@@ -14,6 +23,17 @@
       :r4   [:lensSpecification :amount]}
      {:stu3 [:dispense :base]
       :r4   [:lensSpecification :base]}])
+  (def tr
+    [{:v1 [:a 0 :b]
+      :v2 [:a 0 :c]}
+     {:v1 [:a 1 :b]
+      :v2 [:a 1 :c]}
+     {:v1 [:a 2 :b]
+      :v2 [:a 2 :c]}])
+  (def tr
+    [{:v1 [[:a] :b]
+      :v2 [[:a] :c]}])
+  (p (test-mutations [:v1 :v2] tr))
   (p (test-mutations [:r4 :stu3] tr))
   (println (str/join (drop 3 (str/join \newline (map #(% "resource") (sql-mutations [:r4 :stu3] tr))))))
   (println (str/join (drop 3 (str/join \newline (map #(% "resource") (sql-mutations [:stu3 :r4] tr))))))
@@ -41,4 +61,12 @@
 ;; ||
 ;; -
 ;; jsonb_build_object
+((:map-fn
+  [(:const-fn :a)]))
 
+((:map-fn
+  (:assoc-fn
+   [(:const-fn :a) idx (:const-fn :c)]
+   (:get-fn [(:const-fn :a) idx (:const-fn :b)])))
+ (:map-fn
+   (:dissoc-fn [(:const-fn :a) idx (:const-fn :b)])))

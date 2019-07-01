@@ -3,46 +3,48 @@
             [bxb.mutate-fns :refer :all]
             [utiliva.core :refer [keepcat]]))
 
-(defn- walk-path [const-fn search-fn ssoc-fn path]
-  (loop [mutations []
-         [first-p & rest-p :as path] path
-         cur-prefix []]
+(defn- walk-path [const-fn search-fn map-fn path]
+  (loop [[first-p & rest-p :as path] path
+         cur-path                    []
+         walked-paths-vals           '()]
     (cond
       (every? may-be-a-key? path)
-      {:mutations mutations
-       :path      (into cur-prefix (map const-fn path))}
+      (conj walked-paths-vals (into cur-path (map const-fn path)))
 
       (may-be-a-key? first-p)
-      (recur mutations
-             rest-p
-             (conj cur-prefix (const-fn first-p)))
+      (recur rest-p
+             (conj cur-path (const-fn first-p))
+             walked-paths-vals)
 
       (map? first-p)
-      (recur (conj mutations (ssoc-fn cur-prefix (const-fn first-p)))
-             rest-p
-             cur-prefix)
+      (let [const-paths
+            (map (fn [[k v]] [(conj cur-path (const-fn k)) (const-fn v)])
+                 first-p)]
+        (recur rest-p
+               cur-path
+               (concat const-paths walked-paths-vals)))
 
       (and (sequential? first-p)
-           (single-elem? first-p)
-           (map? (first first-p)))
-      (recur mutations
-             (into first-p rest-p)
-             (conj cur-prefix (search-fn cur-prefix (first first-p)))))))
+           (single-elem? first-p))
+      (let [ffp (first first-p)]
+        (cond
+          (map? ffp)
+          (recur (into first-p rest-p)
+                 (conj cur-path (search-fn cur-path ffp))
+                 walked-paths-vals))))))
 
-(defn- interpret-template [const-fn search-fn get-fn assoc-fn dissoc-fn src dest]
-  (let [{get-value-path :path, dissoc-mutations :mutations} (walk-path const-fn search-fn dissoc-fn src)
-        {put-value-path :path, assoc-mutations  :mutations} (walk-path const-fn search-fn assoc-fn dest)]
-    (concat
-     assoc-mutations
-     [(assoc-fn put-value-path (get-fn get-value-path))]
-     dissoc-mutations
-     [(dissoc-fn get-value-path (get-fn get-value-path))])))
+(defn- interpret-template [const-fn search-fn map-fn get-fn assoc-fn dissoc-fn src dest]
+  (let [[get-value-path & dissoc-const-paths-vals] (walk-path const-fn search-fn map-fn src)
+        [put-value-path &  assoc-const-paths-vals] (walk-path const-fn search-fn map-fn dest)
+        get-value (get-fn get-value-path)]
+    (into (map (partial apply assoc-fn)  (conj assoc-const-paths-vals  [put-value-path get-value]))
+          (map (partial apply dissoc-fn) (conj dissoc-const-paths-vals [get-value-path get-value])))))
 
 (defn create-mutations
-  "Creates mutations to transform data. Bidirectional"
-  [const-fn search-fn get-fn assoc-fn dissoc-fn [from to] template]
+  "Creates mutations to transmapm data. Bidirectional"
+  [const-fn search-fn map-fn get-fn assoc-fn dissoc-fn [from to] template]
   (let [interpret-template*
-        (partial interpret-template const-fn search-fn get-fn assoc-fn dissoc-fn)]
+        (partial interpret-template const-fn search-fn map-fn get-fn assoc-fn dissoc-fn)]
     (keepcat (fn [{src from, dest to}]
                (when (and src dest) (interpret-template* src dest)))
              template)))
@@ -53,15 +55,16 @@
           mutations))
 
 (def hmap-mutations
-  (partial create-mutations hmap-const-fn hmap-search-fn hmap-get-fn hmap-assoc-fn hmap-dissoc-fn))
+  (partial create-mutations hmap-const-fn hmap-search-fn hmap-map-fn hmap-get-fn hmap-assoc-fn hmap-dissoc-fn))
 
 (def sql-mutations
-  (partial create-mutations sql-const-fn sql-search-fn sql-get-fn sql-assoc-fn sql-dissoc-fn))
+  (partial create-mutations sql-const-fn sql-search-fn sql-map-fn sql-get-fn sql-assoc-fn sql-dissoc-fn))
 
 (def test-mutations
   (partial create-mutations
            (fn [& args] (apply list :const-fn args))
            (fn [& args] (apply list :search-fn args))
+           (fn [& args] (apply list :map-fn args))
            (fn [& args] (apply list :get-fn args))
            (fn [& args] (apply list :assoc-fn args))
            (fn [arg & args] (list :dissoc-fn arg))))

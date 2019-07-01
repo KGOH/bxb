@@ -41,60 +41,36 @@
      {:desc     "hashmap mutation %s->%s with adding const by the path"
       :spec     [:stu3 :r4]
       :stu3     {:resourceType "VisionPrescription"
-                 :reason       "ups"
-                 :dispense     {:prism 5
-                                :base 1}}
+                 :reason       "ups"}
       :r4       {:resourceType      "VisionPrescription"
                  :extension         {:url "http://hl7.org/reason"
-                                     :value {:code "ups"}}
-                 :lensSpecification {:amount 5
-                                     :base 1}}
+                                     :value {:code "ups"}}}
       :template [{:stu3 [:reason]
-                  :r4   [:extension {:url "http://hl7.org/reason"} :value :code]}
-                 {:stu3 [:dispense :prism]
-                  :r4   [:lensSpecification :amount]}
-                 {:stu3 [:dispense :base]
-                  :r4   [:lensSpecification :base]}]}
+                  :r4   [:extension {:url "http://hl7.org/reason"} :value :code]}]}
 
      {:desc "hashmap mutation forwards %s->%s with creating extension vec"
       :spec [:stu3 :r4]
       :stu3 {:resourceType "VisionPrescription"
-             :reason       "ups"
-             :dispense     {:prism 5
-                            :base  1}}
+             :reason       "ups"}
       :r4   {:resourceType      "VisionPrescription"
              :extension         [{:url   "http://hl7.org/reason"
-                                  :value {:code "ups"}}]
-             :lensSpecification {:amount 5
-                                 :base   1}}
+                                  :value {:code "ups"}}]}
       :template [{:stu3 [:reason]
-                  :r4   [:extension [{:url "http://hl7.org/reason"}] :value :code]}
-                 {:stu3 [:dispense :prism]
-                  :r4   [:lensSpecification :amount]}
-                 {:stu3 [:dispense :base]
-                  :r4   [:lensSpecification :base]}]}
+                  :r4   [:extension [{:url "http://hl7.org/reason"}] :value :code]}]}
 
      {:desc "hashmap mutation forwards %s->%s with existing extension vec"
       :spec [:stu3 :r4]
       :stu3 {:resourceType "VisionPrescription"
              :reason "ups"
              :extension [{:url "http://hl7.org/fact"
-                          :value {:code "fucct"}}]
-             :dispense {:prism 5
-                        :base 1}}
+                          :value {:code "fucct"}}]}
       :r4   {:resourceType "VisionPrescription"
              :extension [{:url "http://hl7.org/fact"
                           :value {:code "fucct"}}
                          {:url "http://hl7.org/reason"
-                          :value {:code "ups"}}]
-             :lensSpecification {:amount 5
-                                 :base 1}}
+                          :value {:code "ups"}}]}
       :template [{:stu3 [:reason]
-                  :r4   [:extension [{:url "http://hl7.org/reason"}] :value :code]}
-                 {:stu3 [:dispense :prism]
-                  :r4   [:lensSpecification :amount]}
-                 {:stu3 [:dispense :base]
-                  :r4   [:lensSpecification :base]}]}
+                  :r4   [:extension [{:url "http://hl7.org/reason"}] :value :code]}]}
 
      {:desc     "hashmap mutation %s->%s remap with missing source"
       :spec     [:stu3 :r4]

@@ -39,6 +39,8 @@
     (let [get-value (hmap-get-fn path)]
       (find-match value (get-value data-source)))))
 
+(declare hmap-map-fn)
+
 (defn hmap-assoc-fn [path get-value]
   (fn [data-source] (assoc-in-vec data-source (resolve-path path data-source) (get-value data-source))))
 
@@ -58,6 +60,8 @@
   (fn [data-source] (str "SELECT " (kvs->jsidx (resolve-path path data-source))
                          " FROM " data-source
                          " WHERE " ((sql-const-fn value)))))
+
+(declare sql-map-fn)
 
 (defn sql-get-fn [path]
   (fn [data-source] (str data-source "#>>" (kvs->jsidx (resolve-path path data-source)))))
