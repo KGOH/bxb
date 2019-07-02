@@ -91,7 +91,21 @@
       :v2       {:x [{:y [{:z 1} {:z 2}]}
                      {:y [{:z 3} {:z 4}]}]}
       :template [{:v1 [[:a] [:b] :c]
-                  :v2 [[:x] [:y] :z]}]}])
+                  :v2 [[:x] [:y] :z]}]}
+     {:desc     "hashmap mutation %s->%s add const into root"
+      :spec     [:v1 :v2]
+      :v1       {:a 1}
+      :v2       {:x 1
+                 :required "field"}
+      :template [{:v1 [:a]
+                  :v2 [{:required "field"} :x]}]}
+     {:desc     "hashmap mutation %s->%s add const into root"
+      :spec     [:v1 :v2]
+      :v1       {:a 1}
+      :v2       {:a 1
+                 :required "field"}
+      :template [{:v1 []
+                  :v2 [{:required "field"}]}]}])
 
   (mapv (fn [{:keys [desc spec template] :as t}]
           (mapv (fn [[from to]]
@@ -104,16 +118,5 @@
 
 (comment
   (run-tests)
-; {:a [{:a1  :b2} {:a1 :b3}]}
-; {:a [{:b2} {:a1}]}
-
-; []  ;required fileds, константы без источника в корне
-
-; [:extension [:url] :a] ;; map
-; [:extension [:url] :b] ;; map
-
-; [:extension [{:url "http://hl7.org/reason"}] :value :code]
-; [:extension [{:a1 :b3}] :value :code] ;;
-
   (comment))
 
