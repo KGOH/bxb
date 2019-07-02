@@ -69,4 +69,4 @@
        [(:const-fn :a) idx (:const-fn :c)]
        (:get-fn [(:const-fn :a) idx (:const-fn :b)])))
      (:map-fn
-       (:dissoc-fn [(:const-fn :a) idx (:const-fn :b)]))))))
+      (:dissoc-fn [(:const-fn :a) idx (:const-fn :b)]))))))
