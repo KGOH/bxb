@@ -6,8 +6,8 @@
             [cheshire.core :as json]))
 (do
   (def tr
-    [{:v1 [:a [:b] :c]
-      :v2 [:x [:y] :z]}])
+    [{:v1 [[:a] [:b] :c]
+      :v2 [[:x] [:y] :z]}])
   (p (test-mutations [:v2 :v1] tr)))
 
 (comment

@@ -99,7 +99,7 @@
                  :required "field"}
       :template [{:v1 [:a]
                   :v2 [{:required "field"} :x]}]}
-     {:desc     "hashmap mutation %s->%s add const into root"
+     {:desc     "hashmap mutation %s->%s add const into root without source"
       :spec     [:v1 :v2]
       :v1       {:a 1}
       :v2       {:a 1
