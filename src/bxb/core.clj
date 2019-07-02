@@ -3,13 +3,14 @@
             [bxb.mutate-fns :refer :all]
             [utiliva.core :refer [keepcat]]))
 
-(defn- walk-path [const-fn search-fn map-fn path]
+(defn- walk-path [const-fn search-fn map-fn path cur-path]
   (loop [[first-p & rest-p :as path] path
-         cur-path                    []
+         cur-path                    cur-path
          walked-paths-vals           '()]
     (cond
       (every? may-be-a-key? path)
-      (conj walked-paths-vals (into cur-path (map const-fn path)))
+      {:walked-path      (into cur-path (map const-fn path))
+       :const-paths-vals walked-paths-vals}
 
       (may-be-a-key? first-p)
       (recur rest-p
@@ -19,9 +20,9 @@
       (map? first-p)
       (recur rest-p
              cur-path
-             (into (map (fn [[k v]] [(conj cur-path (const-fn k)) (const-fn v)])
-                        first-p)
-                   walked-paths-vals))
+             (concat (map (fn [[k v]] [(conj cur-path (const-fn k)) (const-fn v)])
+                          first-p)
+                     walked-paths-vals))
 
       (and (sequential? first-p)
            (single-elem? first-p))
@@ -30,17 +31,31 @@
           (map? ffp)
           (recur (into first-p rest-p)
                  (conj cur-path (search-fn cur-path ffp))
-                 walked-paths-vals))))))
+                 walked-paths-vals)
 
-(defn- interpret-template [const-fn search-fn map-fn get-fn assoc-fn dissoc-fn src dest]
-  (let [[get-value-path & dissoc-const-paths-vals] (walk-path const-fn search-fn map-fn src)
-        [put-value-path &  assoc-const-paths-vals] (walk-path const-fn search-fn map-fn dest)
-        get-value (get-fn get-value-path)]
-    (concat
-      (map (partial apply assoc-fn) assoc-const-paths-vals)
-      [(assoc-fn put-value-path get-value)
-       (dissoc-fn get-value-path get-value)]
-      (map (partial apply dissoc-fn) dissoc-const-paths-vals))))
+          (may-be-a-key? ffp)
+          {:const-paths-vals walked-paths-vals
+           :map              {:path        rest-p
+                              :walked-path (conj cur-path (const-fn ffp))}})))))
+
+(defn- interpret-template [const-fn search-fn map-fn get-fn assoc-fn dissoc-fn src dest cur-src cur-dest]
+  (let [{get-value-path :walked-path, dissoc-const-paths-vals :const-paths-vals, {map-src :path, dissoc-map-path :walked-path} :map}
+        (walk-path const-fn search-fn map-fn src cur-src)
+
+        {put-value-path :walked-path, assoc-const-paths-vals  :const-paths-vals, {map-dest :path, assoc-map-path :walked-path} :map}
+        (walk-path const-fn search-fn map-fn dest cur-dest)]
+    (cond
+      (and get-value-path put-value-path)
+      (concat
+        (map (partial apply assoc-fn) assoc-const-paths-vals)
+        [(assoc-fn  put-value-path (get-fn get-value-path))
+         (dissoc-fn get-value-path (get-fn get-value-path))]
+        (map (partial apply dissoc-fn) dissoc-const-paths-vals))
+
+      (and map-src map-dest)
+      [(map-fn dissoc-map-path
+               assoc-map-path
+               (interpret-template const-fn search-fn map-fn get-fn assoc-fn dissoc-fn map-src map-dest [] []))])))
 
 (defn create-mutations
   "Creates mutations to transmapm data. Bidirectional"
@@ -48,7 +63,7 @@
   (let [interpret-template*
         (partial interpret-template const-fn search-fn map-fn get-fn assoc-fn dissoc-fn)]
     (keepcat (fn [{src from, dest to}]
-               (when (and src dest) (interpret-template* src dest)))
+               (when (and src dest) (interpret-template* src dest [] [])))
              template)))
 
 (defn mutate [mutations data]

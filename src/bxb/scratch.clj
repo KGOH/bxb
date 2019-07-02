@@ -6,15 +6,15 @@
             [cheshire.core :as json]))
 (do
   (def tr
-    [{:v1 [:a 0 :b]
-      :v2 [:a 0 :c]}
-     {:v1 [:a 1 :b]
-      :v2 [:a 1 :c]}
-     {:v1 [:a 2 :b]
-      :v2 [:a 2 :c]}])
+    [{:v1 [:a [:b] :c]
+      :v2 [:x [:y] :z]}])
   (p (test-mutations [:v2 :v1] tr)))
 
 (comment
+  ((:map-fn
+    [(:const-fn :x) (:const-fn :y)]
+    ((:assoc-fn [(:const-fn :c)] (:get-fn [(:const-fn :z)]))
+     (:dissoc-fn [(:const-fn :z)]))))
   (println *e)
   (def tr
     [{:stu3 [:reason]
@@ -56,17 +56,17 @@
 
   [[:a] [:b]]
   [[:a :b] [:c]]
-  [[:a] [:b :c]])
+  [[:a] [:b :c]]
 ;;https://www.postgresql.org/docs/11/functions-json.html
 ;; ||
 ;; -
 ;; jsonb_build_object
-((:map-fn
-  [(:const-fn :a)]))
+  ((:map-fn
+    [(:const-fn :a)]
 
-((:map-fn
-  (:assoc-fn
-   [(:const-fn :a) idx (:const-fn :c)]
-   (:get-fn [(:const-fn :a) idx (:const-fn :b)])))
- (:map-fn
-   (:dissoc-fn [(:const-fn :a) idx (:const-fn :b)])))
+    ((:map-fn
+      (:assoc-fn
+       [(:const-fn :a) idx (:const-fn :c)]
+       (:get-fn [(:const-fn :a) idx (:const-fn :b)])))
+     (:map-fn
+       (:dissoc-fn [(:const-fn :a) idx (:const-fn :b)]))))))

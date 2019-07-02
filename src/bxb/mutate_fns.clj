@@ -39,7 +39,14 @@
     (let [get-value (hmap-get-fn path)]
       (find-match value (get-value data-source)))))
 
-(declare hmap-map-fn)
+(defn hmap-map-fn [src-path dest-path mutations]
+  (fn [data-source]
+    (let [dest (resolve-path dest-path data-source)
+          src  (resolve-path src-path  data-source)]
+      (-> data-source
+          (assoc-in dest (mapv (fn [data] (reduce #(%2 %1) data mutations))
+                               (get-in data-source src)))
+          (dissoc-in src)))))
 
 (defn hmap-assoc-fn [path get-value]
   (fn [data-source] (assoc-in-vec data-source (resolve-path path data-source) (get-value data-source))))
