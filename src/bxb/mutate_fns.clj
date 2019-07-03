@@ -46,7 +46,9 @@
       (-> data-source
           (assoc-in dest (mapv (fn [data] (reduce #(%2 %1) data mutations))
                                (get-in data-source src)))
-          (dissoc-in src)))))
+          (cond->
+            (not= src dest)
+            (dissoc-in src))))))
 
 (defn hmap-assoc-fn [path get-value]
   (fn [data-source] (assoc-in-vec data-source (resolve-path path data-source) (get-value data-source))))
