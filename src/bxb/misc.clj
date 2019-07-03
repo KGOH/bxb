@@ -2,9 +2,10 @@
   (:require [clojure.java.io :as io]
             [clojure.edn :as edn]))
 
-(defn assoc-in-vec [m [k & ks] v]
+(defn assoc-in-vec [m [k & ks :as keys] v]
   (cond
-    (nil? v)
+    (or (nil? v)
+        (empty? keys))
     m
 
     (and (nil? m)
@@ -19,7 +20,15 @@
         (and (nil? m) (keyword? k)))
     (if ks
       (assoc m k (assoc-in-vec (get m k) ks v))
-      (assoc m k v))))
+      (assoc m k v))
+
+    (and (identity m)
+         (not (or (sequential? m)
+                  (map? m))))
+    (recur nil keys v)
+
+    :else
+    m))
 
 (defn vec-remove
   "remove elem in coll
