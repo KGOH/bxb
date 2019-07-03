@@ -13,14 +13,14 @@
                                     :base  1}}
           :r4       {:resourceType      "VisionPrescription"
                      :code              "ups"
-                     :lensSpecification {:amount 5
-                                         :base 1}}
+                     :dispense {:amount 5
+                                :base 1}}
           :template [{:stu3 [:reason]
                       :r4   [:code]}
                      {:stu3 [:dispense :prism]
-                      :r4   [:lensSpecification :amount]}
+                      :r4   [:dispense :amount]}
                      {:stu3 [:dispense :base]
-                      :r4   [:lensSpecification :base]}]}
+                      :r4   [:dispense :base]}]}
 
          {:desc     "hashmap mutation %s->%s with array destruction"
           :spec     [:stu3 :r4]
@@ -38,11 +38,11 @@
                      :dispense     {:prism 5
                                     :base  1}}
           :r4       {:resourceType "VisionPrescription"
-                     :code         "ups"
+                     :reason         {:code "ups"}
                      :amount       5
                      :base         1}
           :template [{:stu3 [:reason]
-                      :r4   [:code]}
+                      :r4   [:reason :code]}
                      {:stu3 [:dispense :prism]
                       :r4   [:amount]}
                      {:stu3 [:dispense :base]
