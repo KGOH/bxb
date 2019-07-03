@@ -8,8 +8,11 @@
   (= m1 (last (diff m1 m2))))
 
 (defn find-match [pattern s]
-  (if (map? s)
+  (cond
+    (map? s)
     (recur pattern [s])
+
+    (sequential? s)
     (let [results
           (keep-indexed
            (fn [i m] (when (match? pattern m) i))
@@ -22,7 +25,10 @@
         (first results)
 
         :else
-        (throw (Exception. "there is more than one match in vector"))))))
+        (throw (Exception. "there is more than one match in vector"))))
+
+    :else
+    0))
 
 (defn resolve-path [path data-source]
   (mapv (fn [pt] (pt data-source))
@@ -53,11 +59,19 @@
         data-source))))
 
 (defn hmap-assoc-fn [path get-value]
-  (fn [data-source] (assoc-in-vec data-source (resolve-path path data-source) (get-value data-source))))
+  (fn [data-source]
+    (let [p (resolve-path path data-source)]
+      (if (not-any? nil? p)
+        (assoc-in-vec data-source p (get-value data-source))
+        data-source))))
 
 (defn hmap-dissoc-fn
   ([path]
-   (fn [data-source] (dissoc-in data-source (resolve-path path data-source))))
+   (fn [data-source]
+     (let [p (resolve-path path data-source)]
+       (if (not-any? nil? p)
+         (dissoc-in data-source p)
+         data-source))))
   ([path value] ; TODO: match dissocing value with provided value
    (hmap-dissoc-fn path)))
 
