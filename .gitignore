@@ -1,4 +1,5 @@
 /resources/private/*
+*scratch*
 /target
 /classes
 /checkouts
