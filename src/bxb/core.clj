@@ -47,8 +47,9 @@
     (cond
       (and get-value-path put-value-path)
       (concat (map (partial apply assoc-fn) assoc-const-paths-vals)
-              [(assoc-fn  put-value-path (get-fn get-value-path))
-               (dissoc-fn get-value-path (get-fn get-value-path))]
+              [(assoc-fn  put-value-path (get-fn get-value-path))]
+              (when (not= src (take (count src) dest))
+                [(dissoc-fn get-value-path (get-fn get-value-path))])
               (map (partial apply dissoc-fn) dissoc-const-paths-vals))
 
       (and map-src map-dest)
