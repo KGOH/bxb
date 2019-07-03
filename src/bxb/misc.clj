@@ -1,4 +1,6 @@
-(ns bxb.misc)
+(ns bxb.misc
+  (:require [clojure.java.io :as io]
+            [clojure.edn :as edn]))
 
 (defn assoc-in-vec [m [k & ks] v]
   (cond
@@ -61,3 +63,16 @@
            (dissocv m k)))
        m)
      (dissocv m k))))
+
+(defn load-edn
+  "Load edn from an io/reader source (filename or io/resource).
+  Credit: https://clojuredocs.org/clojure.edn/read#example-5a68f384e4b09621d9f53a79"
+  [source]
+  (try
+    (with-open [r (io/reader source)]
+      (edn/read (java.io.PushbackReader. r)))
+
+    (catch java.io.IOException e
+      (printf "Couldn't open '%s': %s\n" source (.getMessage e)))
+    (catch RuntimeException e
+      (printf "Error parsing edn file '%s': %s\n" source (.getMessage e)))))
