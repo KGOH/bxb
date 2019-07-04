@@ -178,6 +178,20 @@
                         {:stu3 [:totalCost]
                          :r4   [:total :category :coding [{:code "submitted"}] :amount]}
                         {:stu3 [:totalBenefit]
+                         :r4   [:total :category :coding [{:code "benefit"}] :amount]}]}
+
+         {:desc        "Fhir ClaimResponses #%d roundtrip mutation %s-%s"
+          :spec        [:r4 :stu3]
+          :data-source [(json/parse-string (slurp "resources/fhir_claimresponse.json") keyword)]
+          :template    [{:stu3 [:requestProvider]
+                         :r4   [:requestor]}
+                        {:stu3 [[:item] :sequenceLinkId]
+                         :r4   [[:item] :itemSequence]}
+                        {:stu3 [:outcome :coding [{:system "http://hl7.org/fhir/remittance-outcome"}] :code]
+                         :r4   [:outcome]} ; (when (#{"queued" "complete" "error" "partial"} :stu3.outcome.coding)
+                        {:stu3 [:totalCost]
+                         :r4   [:total :category :coding [{:code "submitted"}] :amount]}
+                        {:stu3 [:totalBenefit]
                          :r4   [:total :category :coding [{:code "benefit"}] :amount]}]}]]
 
     (mapv (fn [{:keys [desc spec template data-source]}]
