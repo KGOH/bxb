@@ -1,7 +1,8 @@
 (ns bxb.core-test
   (:require [clojure.test :refer :all]
             [bxb.core :refer :all]
-            [bxb.misc :refer [load-edn]]))
+            [bxb.misc :refer [load-edn]]
+            [cheshire.core :as json]))
 
 (deftest test-hmap-mutations
   (let [test-cases
@@ -154,7 +155,7 @@
   (let [test-cases
         [{:desc        "Appointments #%d roundtrip mutation %s-%s"
           :spec        [:stu3 :r4]
-          :data-source (->> (load-edn "resources/private/apps.edn")
+          :data-source (->> (load-edn "resources/apps.edn")
                             :entry
                             (map :resource))
           :template    [{:stu3 [:reason]
@@ -166,7 +167,7 @@
 
          {:desc        "ClaimResponses #%d roundtrip mutation %s-%s"
           :spec        [:stu3 :r4]
-          :data-source (load-edn "resources/private/clr.edn")
+          :data-source (load-edn "resources/clr.edn")
           :template    [{:stu3 [:requestProvider]
                          :r4   [:requestor]}
                         {:stu3 [[:item] :sequenceLinkId]
