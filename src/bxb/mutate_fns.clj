@@ -4,6 +4,11 @@
             [cheshire.core :as json]
             [clojure.data :refer [diff]]))
 
+(defn mutate [mutations data]
+  (reduce #(%2 %1)
+          data
+          mutations))
+
 (defn match? [m1 m2]
   (= m1 (last (diff m1 m2))))
 
@@ -48,10 +53,11 @@
 (defn hmap-map-fn [src-path dest-path mutations]
   (fn [data-source]
     (let [dest (resolve-path dest-path data-source)
-          src  (resolve-path src-path  data-source)]
+          src  (resolve-path src-path  data-source)
+          mut-fn (partial mutate mutations)]
       (if-let [data (get-in data-source src)]
         (-> data-source
-            (assoc-in dest (mapv (fn [data] (reduce #(%2 %1) data mutations))
+            (assoc-in dest (mapv mut-fn ;TODO: call bxb.core/mutate instead of creating the same f
                                  (get-in data-source src)))
             (cond->
               (not= src dest)
