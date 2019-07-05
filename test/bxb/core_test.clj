@@ -182,31 +182,31 @@
 
          {:desc        "Fhir ClaimResponses #%d roundtrip mutation %s-%s"
           :spec        [:r4 :stu3]
-          :data-source [(json/parse-string (slurp "resources/fhir_claimresponse.json") keyword)]
+          :data-source (json/parse-string (slurp "resources/fhir_claimresponse.json") keyword)
           :template    [{:stu3 [:requestProvider]
                          :r4   [:requestor]}
                         {:stu3 [[:item] :sequenceLinkId]
-                         :r4   [[:item] :itemSequence]}
-                        {:stu3 [:outcome :coding [{:system "http://hl7.org/fhir/remittance-outcome"}] :code]
-                         :r4   [:outcome]} ; (when (#{"queued" "complete" "error" "partial"} :stu3.outcome.coding)
-                        {:stu3 [:totalCost]
-                         :r4   [:total :category :coding [{:code "submitted"}] :amount]}
-                        {:stu3 [:totalBenefit]
-                         :r4   [:total :category :coding [{:code "benefit"}] :amount]}]}]]
+                         :r4   [[:item] :itemSequence]}]}]]
+                       ; {:stu3 [:outcome :coding [{:system "http://hl7.org/fhir/remittance-outcome"}] :code]
+                       ;  :r4   [:outcome]} ; (when (#{"queued" "complete" "error" "partial"} :stu3.outcome.coding)
+                       ; {:stu3 [:totalCost]
+                       ;  :r4   [:total :category :coding [{:code "submitted"}] :amount]}
+                       ; {:stu3 [:totalBenefit]
+                       ;  :r4   [:total :category :coding [{:code "benefit"}] :amount]}]}]]
 
-    (mapv (fn [{:keys [desc spec template data-source]}]
-            (let [forwards-mut  (hmap-mutations spec template)
-                  backwards-mut (hmap-mutations (reverse spec) template)]
-              (doall
-                (map-indexed
-                  (fn [idx data]
-                    (testing (apply format desc idx spec)
-                      (is (= data
-                             (->> data
-                                  (mutate forwards-mut)
-                                  (mutate backwards-mut))))))
-                  data-source))))
-          test-cases)))
+    (-> (fn [{:keys [desc spec template data-source]}]
+          (let [forwards-mut  (hmap-mutations spec template)
+                backwards-mut (hmap-mutations (reverse spec) template)]
+            (-> (fn [idx data]
+                  (testing (apply format desc idx spec)
+                    (is (= data
+                           (->> data
+                                (mutate forwards-mut)
+                                (mutate backwards-mut))))))
+                (map-indexed data-source)
+                (doall))))
+        (map test-cases)
+        (doall))))
 
 (comment
   (run-tests)
