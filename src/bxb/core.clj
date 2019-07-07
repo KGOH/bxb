@@ -44,7 +44,9 @@
 
         {put-value-path :walked-path, assoc-const-paths-vals  :const-paths-vals, {map-dest :path, assoc-map-path :walked-path} :map}
         (walk-path const-fn search-fn map-fn dest cur-dest)
-        bxb_get_buffer [(const-fn :bxb_get_buffer)]]  ;; Maybe need another way to avoid dissocing the same key where new data was assoced?
+        
+        bxb_get_buffer
+        [(const-fn :bxb_get_buffer)]]  ;; Maybe need another way to avoid dissocing the same key where new data was assoced?
     (cond
       (and get-value-path put-value-path)
       (concat [(assoc-fn bxb_get_buffer (get-fn get-value-path))]
