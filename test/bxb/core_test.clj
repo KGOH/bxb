@@ -172,13 +172,12 @@
                          :r4   [:requestor]}
                         {:stu3 [[:item] :sequenceLinkId]
                          :r4   [[:item] :itemSequence]}
-                        (comment ;; Input data doesn't conform next transformation, roundtrip will fail
-                         {:stu3 [:outcome :coding [{:system "http://hl7.org/fhir/remittance-outcome"}] :code]
-                          :r4   [:outcome]}) ; (when (#{"queued" "complete" "error" "partial"} :stu3.outcome.coding)
+                        {:stu3 [:outcome :coding [{:system "http://hl7.org/fhir/remittance-outcome"}] :code]
+                         :r4   [:outcome]} ; (when (#{"queued" "complete" "error" "partial"} :stu3.outcome.coding)
                         {:stu3 [:totalCost]
-                         :r4   [:total :category :coding [{:code "submitted"}] :amount]}
+                         :r4   [:total [{:category {:coding [{:code "submitted"}]}}] :amount]}
                         {:stu3 [:totalBenefit]
-                         :r4   [:total :category :coding [{:code "benefit"}] :amount]}]}
+                         :r4   [:total [{:category {:coding [{:code "benefit"}]}}] :amount]}]}
 
          {:desc        "Fhir ClaimResponses #%d roundtrip mutation %s-%s"
           :spec        [:r4 :stu3]
@@ -186,13 +185,13 @@
           :template    [{:stu3 [:requestProvider]
                          :r4   [:requestor]}
                         {:stu3 [[:item] :sequenceLinkId]
-                         :r4   [[:item] :itemSequence]}]}]]
-                       ; {:stu3 [:outcome :coding [{:system "http://hl7.org/fhir/remittance-outcome"}] :code]
-                       ;  :r4   [:outcome]} ; (when (#{"queued" "complete" "error" "partial"} :stu3.outcome.coding)
-                       ; {:stu3 [:totalCost]
-                       ;  :r4   [:total :category :coding [{:code "submitted"}] :amount]}
-                       ; {:stu3 [:totalBenefit]
-                       ;  :r4   [:total :category :coding [{:code "benefit"}] :amount]}]}]]
+                         :r4   [[:item] :itemSequence]}
+                        {:stu3 [:outcome :coding [{:system "http://hl7.org/fhir/remittance-outcome"}] :code]
+                         :r4   [:outcome]} ; (when (#{"queued" "complete" "error" "partial"} :stu3.outcome.coding)
+                        {:stu3 [:totalCost]
+                         :r4   [:total [{:category {:coding [{:code "submitted"}]}}] :amount]}
+                        {:stu3 [:totalBenefit]
+                         :r4   [:total [{:category {:coding [{:code "benefit"}]}}] :amount]}]}]]
 
     (-> (fn [{:keys [desc spec template data-source]}]
           (let [forwards-mut  (hmap-mutations spec template)

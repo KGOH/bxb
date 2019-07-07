@@ -97,12 +97,8 @@
     :sequenceLinkId 0}],
   :created "][KG;oCKR]ki\"/P18_*=h\"#g",
   :outcome
-  {:text
-   "QdTK&6amahjOm\\[FX,H|v32oLC'^ec:U2\\1?aSwU9cl\"g]{nNB\"LA^&0$ZX\"<`C+F0/#U?cyW'~c&vzq505yew#!s:m:Z8itAm$OeeI,nM!4wu^lT/D@v19\"e2jcCk&y",
-   :coding
-   [{:code "E",
-     :system "_!oa1Qo0<CgaW3m04cKQ:%(_Pr>IO$7zY^OC}pYi[e:8nJm4=ajX",
-     :display "wk.p;OQm=.4Sb!jB,K\";"}]},
+  {:coding
+   [{:system "http://hl7.org/fhir/remittance-outcome"}]},
   :totalBenefit {:code "I&`", :value 0.0},
   :resourceType "\"\"cvObYH-E1S;",
   :disposition
@@ -226,12 +222,9 @@
     :sequenceLinkId 0}],
   :created "ef|&`L3KPk,kXT>PJ#FGBPdy",
   :outcome
-  {:text
-   "yPdu1XjJhlrvQn+,3QF_Hd3t\"7g)>Ax*$K:2o\\;&6viT\"V?\"YvkP~_TSDBxH,n4]6ENr}]zzI0a#rM0eB{'CV*_^bka:a_a\\%!NZ^3A{,la&7#&jRQ?fAlGKl~(W3u]H",
-   :coding
+  {:coding
    [{:code "C",
-     :system "\\,F<KlhBk[[dLs1b](,eGrQ`\\g\\aONr&7^^_T`hIZ(vO|V4:;Tap",
-     :display "L@J!%SUk9wd|eZTv:zK0"}]},
+     :system "http://hl7.org/fhir/remittance-outcome"}]},
   :totalBenefit {:code "E[N", :value 122.8207950854915},
   :resourceType "5&R*1-94dKd-}",
   :disposition
@@ -335,12 +328,9 @@
   :checkNumber "L?^e.=\\P",
   :created "Jg\"`YpS2lMS$tg)q,Y`T[:O<",
   :outcome
-  {:text
-   "^zO(kx<_js`HuSmM1WqNfNhJRbdPqR'aZza}QnCR-N3VgwsXOqiss{E3[{U4PE_2=OxVoeVQe=9C}MXR:03mOz_OXglo2eDz`YI&6*#}?PH+rN2<7hbJEwVtk|w3&wH^}H",
-   :coding
+  {:coding
    [{:code "$",
-     :system "}:Lo);<!a'gX.;*3@h,M`H>qvB3(59kRc&,hytc7>rY!{P&{Q7vT",
-     :display "ZMbfm;:wx'x4&o)8wtf^V^"}]},
+     :system "http://hl7.org/fhir/remittance-outcome"}]},
   :totalBenefit {:code "(`!", :value 16.510625895555652},
   :resourceType "5ns37?tx}wX&0",
   :disposition
@@ -472,12 +462,9 @@
     :sequenceLinkId 0}],
   :created "R-d>(%E)/(xsNZ\\fqB!|hm;O",
   :outcome
-  {:text
-   "r(/7o_\"JCJs|TP%G#.W^iO&?Pa?utW\\)P+=6z>czH2ZL%w(wQ6CaP_mZ:p@',;)X<QX|^\"v6w`f*|`XHP^|ekS,pipj1w0]R\"j.&?Lh{x\"X%OMC$7!C-yc0GOL_Vi+41lg",
-   :coding
+  {:coding
    [{:code "Y",
-     :system ".a|%)4EG8q85F}c)(N1995-Fq$/\\@?m!oKB|g;P'^tAVw~hc.Xo8",
-     :display "Xr%'a1;v6IFxoA}2^tF#]f"}]},
+     :system "http://hl7.org/fhir/remittance-outcome"}]},
   :totalBenefit {:code "s@M", :value 0.0},
   :resourceType "r\\}U.3eDU#p(I",
   :disposition
