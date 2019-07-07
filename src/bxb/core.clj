@@ -1,6 +1,6 @@
 (ns bxb.core
   (:require [bxb.misc :refer [may-be-a-key? single-elem?]]
-            [bxb.mutate-fns :refer :all]
+            [bxb.mutate-fns :as mf]
             [utiliva.core :refer [keepcat]]))
 
 (defn- walk-path [const-fn search-fn map-fn path cur-path]
@@ -69,16 +69,25 @@
                (when (and src dest) (interpret-template* src dest [] [])))
              template)))
 
-(defn mutate [mutations data]
-  (reduce #(%2 %1)
-          data
-          mutations))
+(def mutate mf/mutate)
 
 (def hmap-mutations
-  (partial create-mutations hmap-const-fn hmap-search-fn hmap-map-fn hmap-get-fn hmap-assoc-fn hmap-dissoc-fn))
+  (partial create-mutations
+           mf/hmap-const-fn
+           mf/hmap-search-fn
+           mf/hmap-map-fn
+           mf/hmap-get-fn
+           mf/hmap-assoc-fn
+           mf/hmap-dissoc-fn))
 
 (def sql-mutations
-  (partial create-mutations sql-const-fn sql-search-fn sql-map-fn sql-get-fn sql-assoc-fn sql-dissoc-fn))
+  (partial create-mutations
+           mf/sql-const-fn
+           mf/sql-search-fn
+           mf/sql-map-fn
+           mf/sql-get-fn
+           mf/sql-assoc-fn
+           mf/sql-dissoc-fn))
 
 (def test-mutations
   (partial create-mutations
@@ -88,3 +97,5 @@
            (fn [& args] (apply list :get-fn args))
            (fn [& args] (apply list :assoc-fn args))
            (fn [arg & args] (list :dissoc-fn arg))))
+
+
