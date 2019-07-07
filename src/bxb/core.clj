@@ -99,5 +99,3 @@
            (fn [& args] (apply list :get-fn args))
            (fn [& args] (apply list :assoc-fn args))
            (fn [arg & args] (list :dissoc-fn arg))))
-
-
