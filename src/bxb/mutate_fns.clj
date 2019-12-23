@@ -4,6 +4,14 @@
             [cheshire.core :as json]
             [clojure.data :refer [diff]]))
 
+(def debug-fns
+  {:const-fn  (fn [& args] (apply list :const-fn args))
+   :search-fn (fn [& args] (apply list :search-fn args))
+   :map-fn    (fn [& args] (apply list :map-fn args))
+   :get-fn    (fn [& args] (apply list :get-fn args))
+   :assoc-fn  (fn [& args] (apply list :assoc-fn args))
+   :dissoc-fn (fn [arg & args] (list :dissoc-fn arg))})
+
 (defn mutate [mutations data]
   (reduce #(%2 %1)
           data
@@ -81,6 +89,14 @@
   ([path value] ; TODO: match dissocing value with provided value
    (hmap-dissoc-fn path)))
 
+(def hmap-fns
+  {:const-fn  hmap-const-fn
+   :search-fn hmap-search-fn
+   :map-fn    hmap-map-fn
+   :get-fn    hmap-get-fn
+   :assoc-fn  hmap-assoc-fn
+   :dissoc-fn hmap-dissoc-fn})
+
 (defn kvs->jsidx [s] ; TODO: maybe place this into resolve-path
   (str "'{" (str/join \, s) "}'"))
 
@@ -105,3 +121,11 @@
    (fn [data-source] (str "#- " (kvs->jsidx (resolve-path path data-source)))))
   ([path value]
    (sql-dissoc-fn path))) ; TODO: match dissocing value with provided
+
+(def sql-fns
+  {:const-fn  sql-const-fn
+   :search-fn sql-search-fn
+   :map-fn    sql-map-fn
+   :get-fn    sql-get-fn
+   :assoc-fn  sql-assoc-fn
+   :dissoc-fn sql-dissoc-fn})
