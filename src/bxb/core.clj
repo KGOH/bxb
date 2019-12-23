@@ -1,18 +1,20 @@
 (ns bxb.core
-  (:require [bxb.misc :refer [may-be-a-key? single-elem?]]
-            [bxb.mutate-fns :as mf]
-            [utiliva.core :refer [keepcat]]))
+  (:require [bxb.misc         :as misc]
+            [bxb.mutate.hmap  :as hmap]
+            [bxb.mutate.sql   :as sql]
+            [bxb.mutate.debug :as debug]
+            [utiliva.core     :refer [keepcat]]))
 
-(defn- walk-path [const-fn search-fn map-fn path cur-path]
+(defn- walk-path [const-fn search-fn path cur-path]
   (loop [[first-p & rest-p :as path] path
          cur-path                    cur-path
          walked-paths-vals           '()]
     (cond
-      (every? may-be-a-key? path)
+      (every? misc/key? path)
       {:walked-path      (into cur-path (map const-fn path))
        :const-paths-vals walked-paths-vals}
 
-      (may-be-a-key? first-p)
+      (misc/key? first-p)
       (recur rest-p
              (conj cur-path (const-fn first-p))
              walked-paths-vals)
@@ -25,7 +27,7 @@
                      walked-paths-vals))
 
       (and (sequential? first-p)
-           (single-elem? first-p))
+           (misc/single-elem? first-p))
       (let [ffp (first first-p)]
         (cond
           (map? ffp)
@@ -33,17 +35,17 @@
                  (conj cur-path (search-fn cur-path ffp))
                  walked-paths-vals)
 
-          (may-be-a-key? ffp)
+          (misc/key? ffp)
           {:const-paths-vals walked-paths-vals
            :map              {:path        rest-p
                               :walked-path (conj cur-path (const-fn ffp))}})))))
 
 (defn- interpret-template [{:keys [const-fn search-fn map-fn get-fn assoc-fn dissoc-fn] :as fns} src dest cur-src cur-dest]
   (let [{get-value-path :walked-path, dissoc-const-paths-vals :const-paths-vals, {map-src :path, dissoc-map-path :walked-path} :map}
-        (walk-path const-fn search-fn map-fn src cur-src)
+        (walk-path const-fn search-fn src cur-src)
 
         {put-value-path :walked-path, assoc-const-paths-vals  :const-paths-vals, {map-dest :path, assoc-map-path :walked-path} :map}
-        (walk-path const-fn search-fn map-fn dest cur-dest)
+        (walk-path const-fn search-fn dest cur-dest)
 
         bxb_get_buffer
         [(const-fn :bxb_get_buffer)]]  ;; Maybe need another way to avoid dissocing the same key where new data was assoced?
@@ -69,8 +71,8 @@
              (when (and src dest) (interpret-template fns src dest [] [])))
            template))
 
-(def mutate mf/mutate)
+(def mutate misc/mutate)
 
-(def debug-mutations (partial create-mutations mf/debug-fns))
-(def hmap-mutations (partial create-mutations mf/hmap-fns))
-(def sql-mutations (partial create-mutations mf/sql-fns))
+(def debug-mutations (partial create-mutations debug/fns))
+(def hmap-mutations  (partial create-mutations hmap/fns))
+(def sql-mutations   (partial create-mutations sql/fns))

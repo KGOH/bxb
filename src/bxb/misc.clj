@@ -2,6 +2,11 @@
   (:require [clojure.java.io :as io]
             [clojure.edn :as edn]))
 
+(defn mutate [mutations data]
+  (reduce #(%2 %1)
+          data
+          mutations))
+
 (defn assoc-in-vec [m [k & ks :as keys] v]
   (cond
     (or (nil? v)
@@ -40,7 +45,7 @@
   (and (seq s)
        (empty? (rest s))))
 
-(defn may-be-a-key? [x]
+(defn key? [x]
   (or (keyword? x)
       (integer? x)
       (string?  x)))
