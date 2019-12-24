@@ -147,7 +147,12 @@
                     (testing (format desc from to)
                       (is (= (to t)
                              (mutate (hmap-mutations [from to] template)
-                                     (from t))))))
+                                     (from t)))))
+                    (testing (str "Round trip " (format desc from to))
+                      (is (= (from t)
+                             (->> (from t)
+                                  (mutate (hmap-mutations [from to] template))
+                                  (mutate (hmap-mutations [to from] template)))))))
                   [spec (reverse spec)]))
           test-cases)))
 
