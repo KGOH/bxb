@@ -5,9 +5,9 @@
             [bxb.mutate.debug :as debug]
             [utiliva.core     :refer [keepcat]]))
 
-(defn- walk-path [const-fn search-fn path cur-path]
+(defn- walk-path [const-fn search-fn path]
   (loop [[first-p & rest-p :as path] path
-         cur-path                    cur-path
+         cur-path                    []
          walked-paths-vals           '()]
     (cond
       (every? misc/key? path)
@@ -40,12 +40,12 @@
            :map              {:path        rest-p
                               :walked-path (conj cur-path (const-fn ffp))}})))))
 
-(defn- interpret-template [{:keys [const-fn search-fn map-fn get-fn assoc-fn dissoc-fn] :as fns} src dest cur-src cur-dest]
+(defn- interpret-template [{:keys [const-fn search-fn map-fn get-fn assoc-fn dissoc-fn] :as fns} src dest]
   (let [{get-value-path :walked-path, dissoc-const-paths-vals :const-paths-vals, {map-src :path, dissoc-map-path :walked-path} :map}
-        (walk-path const-fn search-fn src cur-src)
+        (walk-path const-fn search-fn src)
 
         {put-value-path :walked-path, assoc-const-paths-vals  :const-paths-vals, {map-dest :path, assoc-map-path :walked-path} :map}
-        (walk-path const-fn search-fn dest cur-dest)
+        (walk-path const-fn search-fn dest)
 
         bxb_get_buffer
         [(const-fn :bxb_get_buffer)]]  ;; Maybe need another way to avoid dissocing the same key where new data was assoced?
@@ -62,17 +62,17 @@
       (and map-src map-dest)
       [(map-fn dissoc-map-path
                assoc-map-path
-               (interpret-template fns map-src map-dest [] []))])))
+               (interpret-template fns map-src map-dest))])))
 
 (defn create-mutations
   "Creates mutations to transmapm data. Bidirectional"
   [fns [from to] template]
   (keepcat (fn [{src from, dest to}]
-             (when (and src dest) (interpret-template fns src dest [] [])))
+             (when (and src dest) (interpret-template fns src dest)))
            template))
-
-(def mutate misc/mutate)
 
 (def debug-mutations (partial create-mutations debug/fns))
 (def hmap-mutations  (partial create-mutations hmap/fns))
 (def sql-mutations   (partial create-mutations sql/fns))
+
+(def mutate misc/mutate)
