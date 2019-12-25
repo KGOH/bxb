@@ -51,8 +51,7 @@
           mut-fn (partial misc/mutate mutations)]
       (if-let [data (get-in data-source src)]
         (-> data-source
-            (assoc-in dest (mapv mut-fn ;TODO: call bxb.core/mutate instead of creating the same f
-                                 (get-in data-source src)))
+            (assoc-in dest (mapv mut-fn data))
             (cond->
               (not= src dest)
               (dissoc-in src)))
