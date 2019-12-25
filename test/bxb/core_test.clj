@@ -141,7 +141,14 @@
           :v2       {:a 1
                      :r "field"}
           :mapping [{:v1 []
-                      :v2 [{:r "field"}]}]}]]
+                     :v2 [{:r "field"}]}]}
+
+         {:desc    "hashmap mutation %s->%s (un)nesting rename"
+          :spec    [:v1 :v2]
+          :v1      {:a 1}
+          :v2      {:a {:b 1}}
+          :mapping [{:v1 [:a]
+                     :v2 [:a :b]}]}]]
     (mapv (fn [{:keys [desc spec mapping] :as t}]
             (mapv (fn [[from to]]
                     (testing (format desc from to)
