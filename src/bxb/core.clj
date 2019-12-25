@@ -40,7 +40,7 @@
            :map              {:path        rest-p
                               :walked-path (conj cur-path (const-fn ffp))}})))))
 
-(defn- interpret-template [{:keys [const-fn search-fn map-fn get-fn assoc-fn dissoc-fn] :as fns} src dest]
+(defn- interpret-mapping [{:keys [const-fn search-fn map-fn get-fn assoc-fn dissoc-fn] :as fns} src dest]
   (let [{get-value-path :walked-path, dissoc-const-paths-vals :const-paths-vals, {map-src :path, dissoc-map-path :walked-path} :map}
         (walk-path const-fn search-fn src)
 
@@ -62,17 +62,17 @@
       (and map-src map-dest)
       [(map-fn dissoc-map-path
                assoc-map-path
-               (interpret-template fns map-src map-dest))])))
+               (interpret-mapping fns map-src map-dest))])))
 
-(defn create-mutations
+(defn create-transformations
   "Creates mutations to transmapm data. Bidirectional"
-  [fns [from to] template]
+  [fns [from to] mapping]
   (keepcat (fn [{src from, dest to}]
-             (when (and src dest) (interpret-template fns src dest)))
-           template))
+             (when (and src dest) (interpret-mapping fns src dest)))
+           mapping))
 
-(def debug-mutations (partial create-mutations debug/fns))
-(def hmap-mutations  (partial create-mutations hmap/fns))
-(def sql-mutations   (partial create-mutations sql/fns))
+(def debug-transformations (partial create-transformations debug/fns))
+(def hmap-transformations  (partial create-transformations hmap/fns))
+(def sql-transformations   (partial create-transformations sql/fns))
 
 (def mutate misc/mutate)

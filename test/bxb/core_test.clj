@@ -4,7 +4,7 @@
             [bxb.misc :refer [load-edn]]
             [cheshire.core :as json]))
 
-(deftest test-hmap-mutations
+(deftest test-hmap-transformations
   (let [test-cases
         [{:desc     "hashmap mutation %s->%s nested name remap"
           :spec     [:stu3 :r4]
@@ -16,7 +16,7 @@
                      :code              "ups"
                      :dispense {:amount 5
                                 :base 1}}
-          :template [{:stu3 [:reason]
+          :mapping [{:stu3 [:reason]
                       :r4   [:code]}
                      {:stu3 [:dispense :prism]
                       :r4   [:dispense :amount]}
@@ -29,7 +29,7 @@
                      :dispense     [{:prism 5}]}
           :r4       {:resourceType "VisionPrescription"
                      :amount       5}
-          :template [{:stu3 [:dispense 0 :prism]
+          :mapping [{:stu3 [:dispense 0 :prism]
                       :r4   [:amount]}]}
 
          {:desc     "hashmap mutation %s->%s (un)nesting name remap"
@@ -42,7 +42,7 @@
                      :reason         {:code "ups"}
                      :amount       5
                      :base         1}
-          :template [{:stu3 [:reason]
+          :mapping [{:stu3 [:reason]
                       :r4   [:reason :code]}
                      {:stu3 [:dispense :prism]
                       :r4   [:amount]}
@@ -56,7 +56,7 @@
           :r4       {:resourceType      "VisionPrescription"
                      :extension         {:url "http://hl7.org/reason"
                                          :value {:code "ups"}}}
-          :template [{:stu3 [:reason]
+          :mapping [{:stu3 [:reason]
                       :r4   [:extension {:url "http://hl7.org/reason"} :value :code]}]}
 
          {:desc "hashmap mutation forwards %s->%s with creating extension vec"
@@ -66,7 +66,7 @@
           :r4   {:resourceType      "VisionPrescription"
                  :extension         [{:url   "http://hl7.org/reason"
                                       :value {:code "ups"}}]}
-          :template [{:stu3 [:reason]
+          :mapping [{:stu3 [:reason]
                       :r4   [:extension [{:url "http://hl7.org/reason"}] :value :code]}]}
 
          {:desc "hashmap mutation forwards %s->%s with existing extension vec"
@@ -80,42 +80,42 @@
                               :value {:code "fucct"}}
                              {:url "http://hl7.org/reason"
                               :value {:code "ups"}}]}
-          :template [{:stu3 [:reason]
+          :mapping [{:stu3 [:reason]
                       :r4   [:extension [{:url "http://hl7.org/reason"}] :value :code]}]}
 
          {:desc     "hashmap mutation %s->%s remap with missing source"
           :spec     [:stu3 :r4]                             ;; TODO: дефолт значения
           :stu3     {:resourceType "VisionPrescription"}    ;; :^default{:value 0}
           :r4       {:resourceType "VisionPrescription"}
-          :template [{:stu3 [:dispense :prism]
+          :mapping [{:stu3 [:dispense :prism]
                       :r4   [:lensSpecification :amount]}]}
 
          {:desc     "hashmap mutation %s->%s mapped name remap"
           :spec     [:v1 :v2]
           :v1       {:i {:a [{:b 1, :c -1} {:b 2, :c -2}]}}
           :v2       {:i {:a [{:y 1, :c -1} {:y 2, :c -2}]}}
-          :template [{:v1 [:i [:a] :b]
+          :mapping [{:v1 [:i [:a] :b]
                       :v2 [:i [:a] :y]}]}
 
          {:desc     "hashmap mutation %s->%s mapped name remap with missing source"
           :spec     [:v1 :v2]
           :v1       {:i {:not-a 0}}
           :v2       {:i {:not-a 0}}
-          :template [{:v1 [:i [:a] :b]
+          :mapping [{:v1 [:i [:a] :b]
                       :v2 [:i [:a] :y]}]}
 
          {:desc     "hashmap mutation %s->%s root array mapped name remap"
           :spec     [:v1 :v2]
           :v1       {:a [{:b 1, :c -1} {:b 2, :c -2}]}
           :v2       {:x [{:y 1, :c -1} {:y 2, :c -2}]}
-          :template [{:v1 [[:a] :b]
+          :mapping [{:v1 [[:a] :b]
                       :v2 [[:x] :y]}]}
 
         ;{:desc     "hashmap mutation %s->%s filtered mapped name remap"
         ; :spec     [:v1 :v2]
         ; :v1       {:i {:a [{:b 1, :flag true} {:b 2, :flag false}]}}
         ; :v2       {:i {:x [{:y 1, :flag true} {:b 2, :flag false}]}}
-        ; :template [{:v1 [:i [:a] [{:flag true}] :b]     ;;TODO: продумать синтаксис матчинга
+        ; :mapping [{:v1 [:i [:a] [{:flag true}] :b]     ;;TODO: продумать синтаксис матчинга
         ;             :v2 [:i [:x] [{:flag true}] :y]}]}  ;; может быть, мета-ключем
 
          {:desc     "hashmap mutation %s->%s nested map name remap"
@@ -124,7 +124,7 @@
                          {:b [{:c 3} {:c 4}]}]}
           :v2       {:x [{:y [{:z 1} {:z 2}]}
                          {:y [{:z 3} {:z 4}]}]}
-          :template [{:v1 [[:a] [:b] :c]
+          :mapping [{:v1 [[:a] [:b] :c]
                       :v2 [[:x] [:y] :z]}]}
 
          {:desc     "hashmap mutation %s->%s add const into root"
@@ -132,7 +132,7 @@
           :v1       {:a 1}
           :v2       {:x 1
                      :r "field"}
-          :template [{:v1 [:a]
+          :mapping [{:v1 [:a]
                       :v2 [{:r "field"} :x]}]}
 
          {:desc     "hashmap mutation %s->%s add const into root without source"
@@ -140,19 +140,19 @@
           :v1       {:a 1}
           :v2       {:a 1
                      :r "field"}
-          :template [{:v1 []
+          :mapping [{:v1 []
                       :v2 [{:r "field"}]}]}]]
-    (mapv (fn [{:keys [desc spec template] :as t}]
+    (mapv (fn [{:keys [desc spec mapping] :as t}]
             (mapv (fn [[from to]]
                     (testing (format desc from to)
                       (is (= (to t)
-                             (mutate (hmap-mutations [from to] template)
+                             (mutate (hmap-transformations [from to] mapping)
                                      (from t)))))
                     (testing (str "Round trip " (format desc from to))
                       (is (= (from t)
                              (->> (from t)
-                                  (mutate (hmap-mutations [from to] template))
-                                  (mutate (hmap-mutations [to from] template)))))))
+                                  (mutate (hmap-transformations [from to] mapping))
+                                  (mutate (hmap-transformations [to from] mapping)))))))
                   [spec (reverse spec)]))
           test-cases)))
 
@@ -163,7 +163,7 @@
           :data-source (->> (load-edn "resources/apps.edn")
                             :entry
                             (map :resource))
-          :template    [{:stu3 [:reason]
+          :mapping    [{:stu3 [:reason]
                          :r4   [:reasonCode]}
                         {:stu3 [:indication]
                          :r4   [:reasonReference]}
@@ -173,7 +173,7 @@
          {:desc        "ClaimResponses #%d roundtrip mutation %s-%s"
           :spec        [:stu3 :r4]
           :data-source (load-edn "resources/clr.edn")
-          :template    [{:stu3 [:requestProvider]
+          :mapping    [{:stu3 [:requestProvider]
                          :r4   [:requestor]}
                         {:stu3 [[:item] :sequenceLinkId]
                          :r4   [[:item] :itemSequence]}
@@ -187,7 +187,7 @@
          {:desc        "Fhir ClaimResponses #%d roundtrip mutation %s-%s"
           :spec        [:r4 :stu3]
           :data-source (json/parse-string (slurp "resources/fhir_claimresponse.json") keyword)
-          :template    [{:stu3 [:requestProvider]
+          :mapping    [{:stu3 [:requestProvider]
                          :r4   [:requestor]}
                         {:stu3 [[:item] :sequenceLinkId]
                          :r4   [[:item] :itemSequence]}
@@ -198,9 +198,9 @@
                         {:stu3 [:totalBenefit]
                          :r4   [:total [{:category {:coding [{:code "benefit"}]}}] :amount]}]}]]
 
-    (-> (fn [{:keys [desc spec template data-source]}]
-          (let [forwards-mut  (hmap-mutations spec template)
-                backwards-mut (hmap-mutations (reverse spec) template)]
+    (-> (fn [{:keys [desc spec mapping data-source]}]
+          (let [forwards-mut  (hmap-transformations spec mapping)
+                backwards-mut (hmap-transformations (reverse spec) mapping)]
             (-> (fn [idx data]
                   (testing (apply format desc idx spec)
                     (is (= data
