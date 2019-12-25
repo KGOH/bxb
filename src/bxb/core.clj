@@ -40,6 +40,13 @@
            :map              {:path        rest-p
                               :walked-path (conj cur-path (const-fn ffp))}})))))
 
+(defn- dissoc? [a b]
+  (let [min-len (min (count a) (count b))]
+    (and (or (seq a) (empty? b))
+         (or (and (seq a) (empty? b))
+             (not= (vec (take min-len a))
+                   (vec (take min-len b)))))))
+
 (defn- interpret-mapping [{:keys [const-fn search-fn map-fn get-fn assoc-fn dissoc-fn] :as fns} src dest]
   (let [{get-value-path :walked-path, dissoc-const-paths-vals :const-paths-vals, {map-src :path, dissoc-map-path :walked-path} :map}
         (walk-path const-fn search-fn src)
@@ -54,7 +61,7 @@
       (concat [(assoc-fn bxb_get_buffer (get-fn get-value-path))]
               (map (partial apply assoc-fn) assoc-const-paths-vals)
               [(assoc-fn  put-value-path (get-fn bxb_get_buffer))]
-              (when (not= (vec src) (vec (take (count src) dest)))
+              (if (dissoc? src dest)
                 [(dissoc-fn get-value-path (get-fn bxb_get_buffer))])
               (map (partial apply dissoc-fn) dissoc-const-paths-vals)
               [(dissoc-fn bxb_get_buffer (get-fn bxb_get_buffer))])
