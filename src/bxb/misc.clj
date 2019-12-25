@@ -61,7 +61,9 @@
     (apply dissoc m ks)
 
     (sequential? m)
-    (reduce vec-remove (vec m) ks)))
+    (reduce vec-remove (vec m) ks)
+
+    :else m))
 
 (defn dissoc-in
   "Dissociates an entry from a nested associative structure returning a new

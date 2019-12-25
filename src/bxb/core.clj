@@ -54,7 +54,7 @@
       (concat [(assoc-fn bxb_get_buffer (get-fn get-value-path))]
               (map (partial apply assoc-fn) assoc-const-paths-vals)
               [(assoc-fn  put-value-path (get-fn bxb_get_buffer))]
-              (when (not= (vec (take (count src) dest)) (vec src))
+              (when (not= (vec src) (vec (take (count src) dest)))
                 [(dissoc-fn get-value-path (get-fn bxb_get_buffer))])
               (map (partial apply dissoc-fn) dissoc-const-paths-vals)
               [(dissoc-fn bxb_get_buffer (get-fn bxb_get_buffer))])
