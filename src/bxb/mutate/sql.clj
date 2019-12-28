@@ -33,17 +33,17 @@
 
 (defn assoc-fn [path get-value]
   (fn [src dest]
-    (loop [path   (resolve-path path src)
-           result (get-value src dest)]
-      (if-let [lp (last path)]
-        (let [path (butlast path)]
+    (loop [path   #spy/p (resolve-path path src)
+           result #spy/p (get-value src dest)]
+      (if-let [lp (peek path)]
+        (let [path (pop path)]
           (recur path
                  (hsql/call :jsonb_set
                             (if (seq path)
                               (hsql/call :coalesce
                                          (hsql/call "#>" :resource (kvs->jsidx path))
                                          "'{}'::jsonb")
-                              :resource)
+                              dest)
                             (str \' \{ lp \} \')
                             result)))
         result))))
@@ -53,8 +53,8 @@
    (fn [src dest]
      (hsql/call
       "#-"
-      src
-      (kvs->jsidx (resolve-path path src)))))
+      dest
+      (kvs->jsidx (resolve-path path dest)))))
   ([path value]
    (dissoc-fn path))) ; TODO: match dissocing value with provided
 
