@@ -3,8 +3,9 @@
             [bxb.mutate.hmap  :as hmap]
             [bxb.mutate.sql   :as sql]
             [bxb.mutate.debug :as debug]
+            [honeysql.core    :as hsql]
             [bxb.honey]
-            [honeysql.core    :as hsql]))
+            [spyscope.core]))
 
 (defn- walk-path [const-fn search-fn path]
   (loop [[first-p & rest-p :as path] path
@@ -44,7 +45,7 @@
 (defn- dissoc? [a b]
   (some false? (map = a b)))
 
-(defn- interpret-mapping [{:keys [const-fn search-fn map-fn get-fn assoc-fn dissoc-fn] :as fns} src dest]
+(defn- interpret-mapping-wb [{:keys [const-fn search-fn map-fn get-fn assoc-fn dissoc-fn] :as fns} src dest]
   (let [{get-value-path :walked-path, dissoc-const-paths-vals :const-paths-vals, {map-src :path, dissoc-map-path :walked-path} :map}
         (walk-path const-fn search-fn src)
 
@@ -62,6 +63,25 @@
                 [(dissoc-fn get-value-path (get-fn bxb_get_buffer))])
               (map (partial apply dissoc-fn) dissoc-const-paths-vals)
               [(dissoc-fn bxb_get_buffer (get-fn bxb_get_buffer))])
+
+      (and map-src map-dest)
+      [(map-fn dissoc-map-path
+               assoc-map-path
+               (interpret-mapping fns map-src map-dest))])))
+
+(defn- interpret-mapping [{:keys [const-fn search-fn map-fn get-fn assoc-fn dissoc-fn] :as fns} src dest]
+  (let [{get-value-path :walked-path, dissoc-const-paths-vals :const-paths-vals, {map-src :path, dissoc-map-path :walked-path} :map}
+        (walk-path const-fn search-fn src)
+
+        {put-value-path :walked-path, assoc-const-paths-vals  :const-paths-vals, {map-dest :path, assoc-map-path :walked-path} :map}
+        (walk-path const-fn search-fn dest)]
+    (cond
+      (and get-value-path put-value-path)
+      (concat (map (partial apply assoc-fn) assoc-const-paths-vals)
+              [(assoc-fn  put-value-path (get-fn get-value-path))]
+              (when (dissoc? src dest)
+                [(dissoc-fn get-value-path (get-fn get-value-path))])
+              (map (partial apply dissoc-fn) dissoc-const-paths-vals))
 
       (and map-src map-dest)
       [(map-fn dissoc-map-path
@@ -87,12 +107,18 @@
                    :a            1}
          :v2      {:resourceType "type"
                    :b            1}
-         :mapping [{:v1 [:a]
-                    :v2 [:b]}]}]
+                                        ;{"a": {"c": [{"f": 2}], "d": 1, "e": -1}}
+         :mapping [{:v1 [:a :d]
+                    :v2 [:d]}
+                   {:v1 [:a :e]
+                    :v2 [:b :c]}
+                   ]}]
     (debug-transformations [:v1 :v2] mapping)
-    (-> {:update :VisionPrescription
+    (-> #_{:update :set_test
          :set {:resource (mutate (sql-transformations [:v1 :v2] mapping) :resource)}
-         :returning [:id]}
+         :returning [:*]}
+        {:select [(mutate (sql-transformations [:v1 :v2] mapping) :resource)]
+         :from [:set_test]}
         hsql/format
         misc/hsql-subs
         println))

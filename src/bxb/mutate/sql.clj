@@ -11,7 +11,7 @@
         path))
 
 (defn const-fn [constant]
-  (constantly constant))
+  (constantly ((if (keyword? constant) name str) constant)))
 
 (defn search-fn [path value]
   (fn [data-source] "search"))
@@ -27,17 +27,26 @@
 (defn get-fn [path]
   (fn [data-source]
     (hsql/call
-     "#>>"
+     "#>"
      data-source
      (kvs->jsidx (resolve-path path data-source)))))
 
 (defn assoc-fn [path get-value]
   (fn [data-source]
-    (hsql/call
-     "||"
-     data-source
-     {:jsonb (assoc-in {} (resolve-path path data-source)
-                       "...")})))
+    (loop [path   (resolve-path path data-source)
+           result (get-value data-source)]
+      (if-let [lp (last path)]
+        (let [path (butlast path)]
+          (recur path
+                 (hsql/call :jsonb_set
+                            (if (seq path)
+                              (hsql/call :coalesce
+                                         (hsql/call "#>" :resource (kvs->jsidx path))
+                                         "'{}'::jsonb")
+                              :resource)
+                            (str \' \{ lp \} \')
+                            result)))
+        result))))
 
 (defn dissoc-fn
   ([path]
