@@ -95,5 +95,6 @@
          :returning [:id]}
         hsql/format
         misc/hsql-subs
-        println)
-    ))
+        println))
+
+  nil)
