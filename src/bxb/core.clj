@@ -3,6 +3,7 @@
             [bxb.mutate.hmap  :as hmap]
             [bxb.mutate.sql   :as sql]
             [bxb.mutate.debug :as debug]
+            [bxb.honey]
             [honeysql.core    :as hsql]))
 
 (defn- walk-path [const-fn search-fn path]
