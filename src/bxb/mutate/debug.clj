@@ -9,4 +9,4 @@
    :map-fn    (debug-fn :map-fn)
    :get-fn    (debug-fn :get-fn)
    :assoc-fn  (debug-fn :assoc-fn)
-   :dissoc-fn (fn [arg & args] (list :dissoc-fn arg))})
+   :dissoc-fn (debug-fn :dissoc-fn)})

@@ -6,35 +6,35 @@
 (defn kvs->jsidx [s] ; TODO: maybe place this into resolve-path
   (str "'{" (str/join \, s) "}'"))
 
-(defn resolve-path [path data-source]
-  (mapv (fn [pt] (pt data-source))
+(defn resolve-path [path src]
+  (mapv (fn [pt] (pt src))
         path))
 
 (defn const-fn [constant]
   (constantly ((if (keyword? constant) name str) constant)))
 
 (defn search-fn [path value]
-  (fn [data-source] "search"))
+  (fn [src dest] "search"))
 
 (declare map-fn)
 
-(defn get-resource [data-source]
-  (:set data-source :resource))
+(defn get-resource [src]
+  (:set src :resource))
 
 (defn resource [r]
   (or r :resource))
 
 (defn get-fn [path]
-  (fn [data-source]
+  (fn [src dest]
     (hsql/call
      "#>"
-     data-source
-     (kvs->jsidx (resolve-path path data-source)))))
+     src
+     (kvs->jsidx (resolve-path path src)))))
 
 (defn assoc-fn [path get-value]
-  (fn [data-source]
-    (loop [path   (resolve-path path data-source)
-           result (get-value data-source)]
+  (fn [src dest]
+    (loop [path   (resolve-path path src)
+           result (get-value src dest)]
       (if-let [lp (last path)]
         (let [path (butlast path)]
           (recur path
@@ -50,11 +50,11 @@
 
 (defn dissoc-fn
   ([path]
-   (fn [data-source]
+   (fn [src dest]
      (hsql/call
       "#-"
-      data-source
-      (kvs->jsidx (resolve-path path data-source)))))
+      src
+      (kvs->jsidx (resolve-path path src)))))
   ([path value]
    (dissoc-fn path))) ; TODO: match dissocing value with provided
 

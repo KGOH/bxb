@@ -4,7 +4,7 @@
             [clojure.edn :as edn]))
 
 (defn mutate [mutations data]
-  (reduce #(%2 %1)
+  (reduce #(%2 data %1)
           data
           mutations))
 
