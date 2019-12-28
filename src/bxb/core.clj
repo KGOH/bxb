@@ -41,10 +41,7 @@
                               :walked-path (conj cur-path (const-fn ffp))}})))))
 
 (defn- dissoc? [a b]
-  (when-not (and (empty? a) (seq b))
-    (let [min-len (min (count a) (count b))]
-      (not= (vec (take min-len a))
-            (vec (take min-len b))))))
+  (some false? (map = a b)))
 
 (defn- interpret-mapping [{:keys [const-fn search-fn map-fn get-fn assoc-fn dissoc-fn] :as fns} src dest]
   (let [{get-value-path :walked-path, dissoc-const-paths-vals :const-paths-vals, {map-src :path, dissoc-map-path :walked-path} :map}
