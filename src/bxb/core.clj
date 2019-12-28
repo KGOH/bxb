@@ -2,8 +2,7 @@
   (:require [bxb.misc         :as misc]
             [bxb.mutate.hmap  :as hmap]
             [bxb.mutate.sql   :as sql]
-            [bxb.mutate.debug :as debug]
-            [utiliva.core     :refer [keepcat]]))
+            [bxb.mutate.debug :as debug]))
 
 (defn- walk-path [const-fn search-fn path]
   (loop [[first-p & rest-p :as path] path
@@ -70,9 +69,9 @@
 (defn create-transformations
   "Creates mutations to transmapm data. Bidirectional"
   [fns [from to] mapping]
-  (keepcat (fn [{src from, dest to}]
-             (when (and src dest) (interpret-mapping fns src dest)))
-           mapping))
+  (misc/keepcat (fn [{src from, dest to}]
+                  (when (and src dest) (interpret-mapping fns src dest)))
+                mapping))
 
 (def debug-transformations (partial create-transformations debug/fns))
 (def hmap-transformations  (partial create-transformations hmap/fns))

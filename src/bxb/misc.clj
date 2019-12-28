@@ -92,3 +92,9 @@
       (printf "Couldn't open '%s': %s\n" source (.getMessage e)))
     (catch RuntimeException e
       (printf "Error parsing edn file '%s': %s\n" source (.getMessage e)))))
+
+(defn keepcat
+  "mapcat : map :: keepcat : keep"
+  ([] (comp (keep identity) cat))
+  ([f] (comp (keep f) cat))
+  ([f & colls] (apply concat (apply keep f colls))))
