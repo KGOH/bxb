@@ -1,3 +1,6 @@
+.EXPORT_ALL_VARIABLES:
+.PHONY: test build
+
 repl:
 	rm -rf .cpcache/ && DEBUG=true clj -A:dev:test:nrepl
 
@@ -9,6 +12,6 @@ run-jar:
 	java -jar app.jar -m app.core
 
 test:
-	DEBUG=false clj -A:test:runner
+	clj -A:test:runner
 
 
