@@ -3,8 +3,7 @@
             [bxb.mutate.hmap  :as hmap]
             [bxb.mutate.sql   :as sql]
             [bxb.mutate.debug :as debug]
-            [honeysql.core    :as hsql]
-            [spyscope.core]))
+            [honeysql.core    :as hsql]))
 
 (defn- walk-path [const-fn search-fn path]
   (loop [[first-p & rest-p :as path] path

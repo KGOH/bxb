@@ -7,8 +7,8 @@
   (str "'{" (str/join \, s) "}'"))
 
 (defn resolve-path [path data-source]
-  #spy/p (mapv (fn [pt] (pt data-source))
-               path))
+  (mapv (fn [pt] (pt data-source))
+        path))
 
 (defn const-fn [constant]
   (constantly constant))
@@ -36,8 +36,8 @@
     (hsql/call
      "||"
      data-source
-     #spy/p {:jsonb (assoc-in {} #spy/p (resolve-path path data-source)
-                              "...")})))
+     {:jsonb (assoc-in {} (resolve-path path data-source)
+                       "...")})))
 
 (defn dissoc-fn
   ([path]
