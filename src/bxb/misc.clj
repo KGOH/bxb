@@ -1,11 +1,17 @@
 (ns bxb.misc
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [clojure.edn :as edn]))
 
 (defn mutate [mutations data]
   (reduce #(%2 %1)
           data
           mutations))
+
+(defn hsql-subs [[sql & args]]
+  (reduce (fn [s arg] (str/replace-first s #"\?" arg))
+   sql
+   args))
 
 (defn assoc-in-vec [m [k & ks :as keys] v]
   (cond

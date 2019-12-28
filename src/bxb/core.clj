@@ -2,7 +2,9 @@
   (:require [bxb.misc         :as misc]
             [bxb.mutate.hmap  :as hmap]
             [bxb.mutate.sql   :as sql]
-            [bxb.mutate.debug :as debug]))
+            [bxb.mutate.debug :as debug]
+            [honeysql.core    :as hsql]
+            [spyscope.core]))
 
 (defn- walk-path [const-fn search-fn path]
   (loop [[first-p & rest-p :as path] path
@@ -78,3 +80,20 @@
 (def sql-transformations   (partial create-transformations sql/fns))
 
 (def mutate misc/mutate)
+
+(comment
+  (let [{:keys [v1 v2 mapping]}
+        {:v1      {:resourceType "type"
+                   :a            1}
+         :v2      {:resourceType "type"
+                   :b            1}
+         :mapping [{:v1 [:a]
+                    :v2 [:b]}]}]
+    (debug-transformations [:v1 :v2] mapping)
+    (-> {:update :VisionPrescription
+         :set {:resource (mutate (sql-transformations [:v1 :v2] mapping) :resource)}
+         :returning [:id]}
+        hsql/format
+        misc/hsql-subs
+        println)
+    ))

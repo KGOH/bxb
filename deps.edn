@@ -1,6 +1,7 @@
 {:paths ["src" "resources"]
  :deps {org.clojure/clojure       {:mvn/version "1.10.1"}
         org.clojure/clojurescript {:mvn/version "1.10.597"}
+        honeysql                  {:mvn/version "0.9.8"}
         cheshire                  {:mvn/version "5.9.0"}}
 
  :aliases

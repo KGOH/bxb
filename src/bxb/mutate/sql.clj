@@ -1,31 +1,51 @@
 (ns bxb.mutate.sql
   (:require [clojure.string :as str]
+            [honeysql.core    :as hsql]
             [cheshire.core :as json]))
 
 (defn kvs->jsidx [s] ; TODO: maybe place this into resolve-path
   (str "'{" (str/join \, s) "}'"))
 
-(declare resolve-path)
+(defn resolve-path [path data-source]
+  #spy/p (mapv (fn [pt] (pt data-source))
+               path))
 
 (defn const-fn [constant]
-  (constantly (json/generate-string constant)))
+  (constantly constant))
 
 (defn search-fn [path value]
-  (fn [data-source] (str "SELECT " (kvs->jsidx (resolve-path path data-source))
-                         " FROM " data-source
-                         " WHERE " ((const-fn value)))))
+  (fn [data-source] "search"))
 
 (declare map-fn)
 
+(defn get-resource [data-source]
+  (:set data-source :resource))
+
+(defn resource [r]
+  (or r :resource))
+
 (defn get-fn [path]
-  (fn [data-source] (str data-source "#>>" (kvs->jsidx (resolve-path path data-source)))))
+  (fn [data-source]
+    (hsql/call
+     "#>>"
+     data-source
+     (kvs->jsidx (resolve-path path data-source)))))
 
 (defn assoc-fn [path get-value]
-  (fn [data-source] (str "|| jsonb_set(" data-source ", " (kvs->jsidx (resolve-path path data-source)) ", " (get-value data-source) ")")))
+  (fn [data-source]
+    (hsql/call
+     "||"
+     data-source
+     #spy/p {:jsonb (assoc-in {} #spy/p (resolve-path path data-source)
+                              "...")})))
 
 (defn dissoc-fn
   ([path]
-   (fn [data-source] (str "#- " (kvs->jsidx (resolve-path path data-source)))))
+   (fn [data-source]
+     (hsql/call
+      "#-"
+      data-source
+      (kvs->jsidx (resolve-path path data-source)))))
   ([path value]
    (dissoc-fn path))) ; TODO: match dissocing value with provided
 
