@@ -18,12 +18,6 @@
 
 (declare map-fn)
 
-(defn get-resource [src]
-  (:set src :resource))
-
-(defn resource [r]
-  (or r :resource))
-
 (defn get-fn [path]
   (fn [src dest]
     (hsql/call
