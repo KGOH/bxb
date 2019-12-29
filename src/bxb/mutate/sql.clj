@@ -27,8 +27,8 @@
 
 (defn assoc-fn [path get-value]
   (fn [src dest]
-    (loop [path   #spy/p (resolve-path path src)
-           result #spy/p (get-value src dest)]
+    (loop [path   (resolve-path path src)
+           result (get-value src dest)]
       (if-let [lp (peek path)]
         (let [path (pop path)]
           (recur path
