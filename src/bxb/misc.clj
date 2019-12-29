@@ -8,8 +8,11 @@
           data
           mutations))
 
-(defn hsql-subs [[sql & args]]
-  (reduce (fn [s arg] (str/replace-first s #"\?" arg))
+(defn hsql-subs [[sql & args :as a]]
+  (reduce (fn [s arg] (str/replace-first s #"\?"
+                                        (cond
+                                          (string? arg) (str \' arg \')
+                                          :else (str arg))))
    sql
    args))
 

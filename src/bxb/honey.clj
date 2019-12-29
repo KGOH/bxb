@@ -1,6 +1,7 @@
 (ns bxb.honey
   (:refer-clojure :exclude [update])
   (:require [clojure.string :as str]
+            [honeysql.core    :as hsql]
             [cheshire.core :as json]
             [honeysql.format :as sqlf]))
 
@@ -86,9 +87,33 @@
 (defmethod sqlf/fn-handler "ilike" [_ col qstr]
   (str (sqlf/to-sql col) " ilike " (sqlf/to-sql qstr)))
 
-(doseq [op ["@@" "@>" "<@" "||" "&&" "->" "->>" "#>>" "#>" "?" "?|" "?&" "#-"]]
+(doseq [op ["@@" "&&" "->" "->>" "?" "?|" "?&"]]
   (defmethod sqlf/fn-handler op [_ col qstr]
-    (str (sqlf/to-sql col) " " op " " (sqlf/to-sql qstr))))
+    (str (sqlf/to-sql col) " " (name op) " " (sqlf/to-sql qstr))))
+
+(doseq [op ["@>" "<@" "||"]]
+  (defmethod sqlf/fn-handler op [_ col qstr]
+    (str/join " "
+              [(-> col
+                   (cond-> (map? col) json/generate-string)
+                   sqlf/to-sql)
+               (name op)
+               (-> qstr
+                   (cond-> (map? qstr) json/generate-string)
+                   sqlf/to-sql)])))
+
+(doseq [op ["#>>" "#>" "#-"]]
+  (defmethod sqlf/fn-handler op [_ col qstr]
+    (str/join " "
+              [(sqlf/to-sql col)
+               (name op)
+               (->> qstr
+                    (map #(hsql/call :cast % :TEXT))
+                    (hsql/call :arr)
+                    sqlf/to-sql)])))
+
+(defmethod sqlf/fn-handler "arr" [_ els]
+  (str "ARRAY" \[ (str/join ", " (map sqlf/to-sql els)) \]))
 
 (defmethod sqlf/fn-handler "not-ilike" [_ col qstr]
   (str (sqlf/to-sql col) " not ilike " (sqlf/to-sql qstr)))

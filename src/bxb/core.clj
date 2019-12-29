@@ -89,6 +89,8 @@
                    {:v1 [:a :e]
                     :v2 [:b :c]}
                    {:v1 [:a :c 0 :f]
+                    :v2 [:a :c]}
+                   {:v1 [:a :c]
                     :v2 [:a :c :f]}]}]
     (debug-transformations [:v1 :v2] mapping)
     (-> #_{:update :set_test

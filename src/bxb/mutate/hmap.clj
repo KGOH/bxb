@@ -44,6 +44,11 @@
     (let [get-value (get-fn path)]
       (find-match value (get-value src src)))))
 
+(let [data-source {:a [{:f 2, :v 1} {:f 1, :v 2} {:f 0, :v 3}]}]
+  ((get-fn [(const-fn :a)
+            (search-fn (map const-fn [:a]) {:f 1})])
+   data-source data-source))
+
 (defn map-fn [src-path dest-path mutations]
   (fn [src dest]
     (let [dest-p (resolve-path dest-path dest)

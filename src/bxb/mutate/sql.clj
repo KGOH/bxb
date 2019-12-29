@@ -1,10 +1,7 @@
 (ns bxb.mutate.sql
-  (:require [clojure.string :as str]
-            [honeysql.core    :as hsql]
-            [cheshire.core :as json]))
-
-(defn kvs->jsidx [s] ; TODO: maybe place this into resolve-path
-  (str "'{" (str/join \, s) "}'"))
+  (:require [honeysql.core    :as hsql]
+            [cheshire.core :as json]
+            [bxb.misc :as misc]))
 
 (defn resolve-path [path src]
   (mapv (fn [pt] (pt src))
@@ -14,7 +11,11 @@
   (constantly ((if (keyword? constant) name str) constant)))
 
 (defn search-fn [path value]
-  (fn [src dest] "search"))
+  (fn [src]
+    {:select [[(hsql/call :-  (hsql/inline :ordinality) (hsql/inline 1)) :idx]]
+     :from   [[(hsql/call :jsonb_array_elements
+                          (hsql/call "#>" src (resolve-path path src))) "WITH ORDINALITY"]]
+     :where  ["@>" :value value]}))
 
 (declare map-fn)
 
@@ -23,10 +24,10 @@
     (hsql/call
      "#>"
      src
-     (kvs->jsidx (resolve-path path src)))))
+     (resolve-path path src))))
 
 (defn assoc-fn [path get-value]
-  (fn [src dest]  ; TODO: replace arrays
+  (fn [src dest]  ; TODO: replace arrays, reassign on scalars
     (loop [path   (resolve-path path src)
            result (get-value src dest)]
       (if-let [lp (peek path)]
@@ -35,7 +36,7 @@
                  (hsql/call :jsonb_set
                             (if (seq path)
                               (hsql/call :coalesce
-                                         (hsql/call "#>" :resource (kvs->jsidx path))
+                                         (hsql/call "#>" :resource path)
                                          "'{}'::jsonb")
                               dest)
                             (str \' \{ lp \} \')
@@ -48,7 +49,7 @@
      (hsql/call
       "#-"
       dest
-      (kvs->jsidx (resolve-path path dest)))))
+      (resolve-path path dest))))
   ([path value]
    (dissoc-fn path))) ; TODO: match dissocing value with provided
 
