@@ -115,6 +115,9 @@
 (defmethod sqlf/fn-handler "arr" [_ els]
   (str "ARRAY" \[ (str/join ", " (map sqlf/to-sql els)) \]))
 
+(defmethod sqlf/fn-handler "::" [_ x t]
+  (str (sqlf/to-sql x) "::" (sqlf/to-sql t)))
+
 (defmethod sqlf/fn-handler "not-ilike" [_ col qstr]
   (str (sqlf/to-sql col) " not ilike " (sqlf/to-sql qstr)))
 

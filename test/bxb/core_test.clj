@@ -238,9 +238,9 @@
 
 (deftest sql
 
-  (def db ;---- db: -h localhost -p 5439 -U postgres testbox
+  (def db
     {:dbtype   "postgresql"
-     :dbname   "testbox"
+     :dbname   "test_testbox"
      :host     "localhost"
      :port     "5439"
      :user     "postgres"

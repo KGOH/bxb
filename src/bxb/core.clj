@@ -78,38 +78,45 @@
 
 (comment
   (require '[cheshire.core :as json])
+  (require '[clojure.java.jdbc :as db])
+
+  (def db
+    {:dbtype   "postgresql"
+     :dbname   "test_testbox"
+     :host     "localhost"
+     :port     "5439"
+     :user     "postgres"
+     :password "postgres"})
+
+  (defn eval-mut-in-pg [transformations data]
+    (->> {:select [[(mutate transformations
+                            (hsql/call :cast (json/generate-string data) :jsonb)) :r]]}
+         hsql/format
+         misc/hsql-subs
+         (db/query db)
+         first
+         :r))
+
+  (defn test-mut-in-pg [transformations data]
+    (->> {:select [[(mutate transformations
+                            (hsql/call :cast (json/generate-string data) :jsonb)) :r]]}
+         hsql/format
+         misc/hsql-subs))
 
   (let [mapping
-        [{:v1 [:a [:c] :f]
-          :v2 [:a [:c] :s]}
-         #_{:v1 [:a :d]
-            :v2 [:d]}
-         #_{:v1 [:e]
-            :v2 [:a :e]}
-         #_{:v1 [:a :c [{:f 3}] :v]
-            :v2 [:f3]}]
+        [{:v1 [:a :c [{:f 3}] :v]
+          :v2 [:ff]}]
 
         data-source
-        [{:a {:c [{:f 2, :v 1}
-                  {:f 3, :v 5}
-                  {:f 4, :v 6}]
-              :d 1}
-          :e -1}
-         {:a {:c [{:f 2, :v 2}
-                  {:f 3, :v 6}
-                  {:f 4, :v 7}]
-              :d 2}
-          :e -2}]]
+        {:a {:c [{:f 2, :v 1}
+                 {:f 3, :v 5}
+                 {:f 4, :v 6}]
+             :d 1}
+         :e -1}]
     (clojure.pprint/pprint (debug-transformations [:v1 :v2] mapping))
-    #_(-> #_{:update    :set_test
-           :set       {:resource (mutate (sql-transformations [:v1 :v2] mapping) :resource)}
-           :returning [:*]}
-        {:select [(mutate (sql-transformations [:v1 :v2] mapping) :resource)]
-         :from   [:set_test]}
-        #_{:select [(mutate (sql-transformations [:v1 :v2] mapping) (hsql/call :cast (json/generate-string data-source) :jsonb))]}
-        hsql/format
-        misc/hsql-subs
+    (-> (test-mut-in-pg (sql-transformations [:v1 :v2] mapping) data-source)
         println)
-    (map (partial mutate (hmap-transformations [:v1 :v2] mapping)) data-source))
+    (mutate (hmap-transformations [:v1 :v2] mapping)
+            data-source))
 
   nil)

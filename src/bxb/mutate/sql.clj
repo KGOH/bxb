@@ -14,7 +14,7 @@
     {:select [[(hsql/call :-  (hsql/inline :ordinality) (hsql/inline 1)) :idx]]
      :from   [[(hsql/call :jsonb_array_elements
                           (hsql/call "#>" src (resolve-path path src))) "WITH ORDINALITY"]]
-     :where  ["@>" :value (hsql/call :cast value "jsonb")]}))
+     :where  ["@>" :value (hsql/call :cast value :jsonb)]}))
 
 (defn map-fn [src-path dest-path mutations]
   (fn [src dest] dest)) ; TODO
@@ -39,8 +39,8 @@
                                          (hsql/call "#>" src path)
                                          (hsql/raw "'{}'::jsonb"))
                               dest)
-                            (hsql/call :arr lp)
-                            (hsql/call :cast result "jsonb"))))
+                            (hsql/call :arr [lp])
+                            (hsql/call :cast result :jsonb))))
         result))))
 
 (defn dissoc-fn
