@@ -26,7 +26,7 @@
      (kvs->jsidx (resolve-path path src)))))
 
 (defn assoc-fn [path get-value]
-  (fn [src dest]
+  (fn [src dest]  ; TODO: replace arrays
     (loop [path   (resolve-path path src)
            result (get-value src dest)]
       (if-let [lp (peek path)]
@@ -44,7 +44,7 @@
 
 (defn dissoc-fn
   ([path]
-   (fn [src dest]
+   (fn [src dest] ; TODO: Remove [], {} and [{}]
      (hsql/call
       "#-"
       dest
