@@ -104,8 +104,12 @@
          misc/hsql-subs))
 
   (let [mapping
-        [{:v1 [:a :c [{:f 3}] :v]
-          :v2 [:ff]}]
+        [{:v1 [:e]
+          :v2 [:a :e]}
+         {:v1 [:a :c [{:f 3}] :v]
+          :v2 [:ff]}
+         {:v1 [:a :d]
+          :v2 [:d]}]
 
         data-source
         {:a {:c [{:f 2, :v 1}
@@ -116,7 +120,10 @@
     (clojure.pprint/pprint (debug-transformations [:v1 :v2] mapping))
     (-> (test-mut-in-pg (sql-transformations [:v1 :v2] mapping) data-source)
         println)
-    (mutate (hmap-transformations [:v1 :v2] mapping)
-            data-source))
+    (-> (eval-mut-in-pg (sql-transformations [:v1 :v2] mapping) data-source)
+        println)
+    (-> (mutate (hmap-transformations [:v1 :v2] mapping)
+                data-source)
+        println))
 
   nil)
