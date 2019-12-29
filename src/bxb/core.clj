@@ -78,28 +78,31 @@
 (def mutate misc/mutate)
 
 (comment
-  (let [{:keys [v1 v2 mapping]}
-        {:v1      {:resourceType "type"
-                   :a            1}
-         :v2      {:resourceType "type"
-                   :b            1}
-                                        ;{"a": {"c": [{"f": 2}], "d": 1, "e": -1}}
-         :mapping [{:v1 [:a :d]
-                    :v2 [:d]}
-                   {:v1 [:a :e]
-                    :v2 [:b :c]}
-                   {:v1 [:a :c 0 :f]
-                    :v2 [:a :c]}
-                   {:v1 [:a :c]
-                    :v2 [:a :c :f]}]}]
-    (debug-transformations [:v1 :v2] mapping)
-    (-> #_{:update :set_test
-         :set {:resource (mutate (sql-transformations [:v1 :v2] mapping) :resource)}
-         :returning [:*]}
-        {:select [(mutate (sql-transformations [:v1 :v2] mapping) :resource)]
-         :from [:set_test]}
+  (require '[cheshire.core :as json])
+
+  (let [mapping
+        [{:v1 [:a :d]
+          :v2 [:d]}
+         {:v1 [:e]
+          :v2 [:a :e]}
+         {:v1 [:a :c [{:f 3}] :v]
+          :v2 [:f3]}]
+
+        data-source
+        {:a {:c [{:f 2, :v 1}
+                 {:f 3, :v 5}
+                 {:f 4, :v 5}]
+             :d 1}
+         :e -1}]
+
+    #spy/p(debug-transformations [:v1 :v2] mapping)
+    (-> #_{:update    :set_test
+           :set       {:resource (mutate (sql-transformations [:v1 :v2] mapping) :resource)}
+           :returning [:*]}
+        {:select [(mutate (sql-transformations [:v1 :v2] mapping) (hsql/call :cast (json/generate-string data-source) :jsonb))]}
         hsql/format
         misc/hsql-subs
-        println))
+        println)
+    (mutate (hmap-transformations [:v1 :v2] mapping) data-source))
 
   nil)

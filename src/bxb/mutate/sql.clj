@@ -1,6 +1,5 @@
 (ns bxb.mutate.sql
   (:require [honeysql.core    :as hsql]
-            [cheshire.core :as json]
             [bxb.misc :as misc]))
 
 (defn resolve-path [path src]
@@ -36,10 +35,10 @@
                  (hsql/call :jsonb_set
                             (if (seq path)
                               (hsql/call :coalesce
-                                         (hsql/call "#>" :resource path)
-                                         "'{}'::jsonb")
+                                         (hsql/call "#>" src path)
+                                         (hsql/raw "'{}'::jsonb"))
                               dest)
-                            (str \' \{ lp \} \')
+                            (str \{ lp \})
                             result)))
         result))))
 
