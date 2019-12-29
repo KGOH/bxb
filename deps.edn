@@ -1,8 +1,11 @@
 {:paths ["src" "resources"]
- :deps {org.clojure/clojure       {:mvn/version "1.10.1"}
-        org.clojure/clojurescript {:mvn/version "1.10.597"}
-        honeysql                  {:mvn/version "0.9.8"}
-        cheshire                  {:mvn/version "5.9.0"}}
+ :deps  {org.clojure/clojure       {:mvn/version "1.10.1"}
+         org.clojure/clojurescript {:mvn/version "1.10.597"}
+         org.clojure/java.jdbc     {:mvn/version "0.7.11"}
+         org.postgresql/postgresql {:mvn/version "42.2.9.jre7"}
+         http-kit                  {:mvn/version "2.3.0"}
+         honeysql                  {:mvn/version "0.9.8"}
+         cheshire                  {:mvn/version "5.9.0"}}
 
  :aliases
  {:dev
@@ -23,15 +26,15 @@
    :extra-deps  {matcho {:mvn/version "0.1.0-RC6"}}}
 
   :nrepl
-  {:extra-deps {cider/cider-nrepl {:mvn/version "0.23.0-SNAPSHOT"}
-                cider/piggieback  {:mvn/version "0.4.2"}
+  {:extra-deps {cider/cider-nrepl             {:mvn/version "0.23.0-SNAPSHOT"}
+                cider/piggieback              {:mvn/version "0.4.2"}
                 refactor-nrepl/refactor-nrepl {:mvn/version "2.5.0-SNAPSHOT"}
                 spyscope                      {:mvn/version "0.1.6"}}
 
-   :main-opts  ["-m"           "nrepl.cmdline"
-                "--middleware" "[cider.nrepl/cider-middleware]"
-                "--port"       "31337"]
-   :jvm-opts   ^:replace ["-XX:-OmitStackTraceInFastThrow"]}
+   :main-opts ["-m"           "nrepl.cmdline"
+               "--middleware" "[cider.nrepl/cider-middleware]"
+               "--port"       "31337"]
+   :jvm-opts  ^:replace ["-XX:-OmitStackTraceInFastThrow"]}
 
   :build
   {:extra-deps {luchiniatwork/cambada {:mvn/version "1.0.2"}}
@@ -41,4 +44,4 @@
                 "--app-group-id" "bxb"
                 "--app-artifact-id" "app"
                 "--no-copy-source"]
-   :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"]}}}
+   :jvm-opts   ^:replace ["-XX:-OmitStackTraceInFastThrow"]}}}

@@ -4,8 +4,7 @@
             [bxb.mutate.sql   :as sql]
             [bxb.mutate.debug :as debug]
             [honeysql.core    :as hsql]
-            [bxb.honey]
-            [spyscope.core]))
+            [bxb.honey]))
 
 (defn- walk-path [const-fn search-fn path]
   (loop [[first-p & rest-p :as path] path
@@ -81,12 +80,14 @@
   (require '[cheshire.core :as json])
 
   (let [mapping
-        [{:v1 [:a :d]
-          :v2 [:d]}
-         {:v1 [:e]
-          :v2 [:a :e]}
-         {:v1 [:a :c [{:f 3}] :v]
-          :v2 [:f3]}]
+        [{:v1 [:a [:c] :f]
+          :v2 [:a [:c] :s]}
+         #_{:v1 [:a :d]
+            :v2 [:d]}
+         #_{:v1 [:e]
+            :v2 [:a :e]}
+         #_{:v1 [:a :c [{:f 3}] :v]
+            :v2 [:f3]}]
 
         data-source
         [{:a {:c [{:f 2, :v 1}
@@ -100,9 +101,9 @@
               :d 2}
           :e -2}]]
     (clojure.pprint/pprint (debug-transformations [:v1 :v2] mapping))
-    (-> #_{:update    :set_test
-         :set       {:resource (mutate (sql-transformations [:v1 :v2] mapping) :resource)}
-         :returning [:*]}
+    #_(-> #_{:update    :set_test
+           :set       {:resource (mutate (sql-transformations [:v1 :v2] mapping) :resource)}
+           :returning [:*]}
         {:select [(mutate (sql-transformations [:v1 :v2] mapping) :resource)]
          :from   [:set_test]}
         #_{:select [(mutate (sql-transformations [:v1 :v2] mapping) (hsql/call :cast (json/generate-string data-source) :jsonb))]}
