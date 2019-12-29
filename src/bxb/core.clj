@@ -89,20 +89,26 @@
           :v2 [:f3]}]
 
         data-source
-        {:a {:c [{:f 2, :v 1}
-                 {:f 3, :v 5}
-                 {:f 4, :v 5}]
-             :d 1}
-         :e -1}]
-
-    #spy/p(debug-transformations [:v1 :v2] mapping)
+        [{:a {:c [{:f 2, :v 1}
+                  {:f 3, :v 5}
+                  {:f 4, :v 6}]
+              :d 1}
+          :e -1}
+         {:a {:c [{:f 2, :v 2}
+                  {:f 3, :v 6}
+                  {:f 4, :v 7}]
+              :d 2}
+          :e -2}]]
+    (clojure.pprint/pprint (debug-transformations [:v1 :v2] mapping))
     (-> #_{:update    :set_test
-           :set       {:resource (mutate (sql-transformations [:v1 :v2] mapping) :resource)}
-           :returning [:*]}
-        {:select [(mutate (sql-transformations [:v1 :v2] mapping) (hsql/call :cast (json/generate-string data-source) :jsonb))]}
+         :set       {:resource (mutate (sql-transformations [:v1 :v2] mapping) :resource)}
+         :returning [:*]}
+        {:select [(mutate (sql-transformations [:v1 :v2] mapping) :resource)]
+         :from   [:set_test]}
+        #_{:select [(mutate (sql-transformations [:v1 :v2] mapping) (hsql/call :cast (json/generate-string data-source) :jsonb))]}
         hsql/format
         misc/hsql-subs
         println)
-    (mutate (hmap-transformations [:v1 :v2] mapping) data-source))
+    (map (partial mutate (hmap-transformations [:v1 :v2] mapping)) data-source))
 
   nil)
